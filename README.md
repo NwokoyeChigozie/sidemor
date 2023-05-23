@@ -32,7 +32,7 @@ $ docker build -t <image tag> .
 $ docker run -d -p <port>:<port> <image tag>
 ```
 
-e.g docker run -d -p 8015:8015 vesicash-mor-api
+e.g docker run -d -p 8016:8016 vesicash-mor-api
 
 ### Testing
 
