@@ -47,6 +47,7 @@ type BaseConfig struct {
 	TRANSACTIONS_DB  string `mapstructure:"TRANSACTIONS_DB"`
 	VERIFICATION_DB  string `mapstructure:"VERIFICATION_DB"`
 	CRON_DB          string `mapstructure:"CRON_DB"`
+	MOR_API_DB       string `mapstructure:"MOR_API_DB"`
 	MIGRATE          bool   `mapstructure:"MIGRATE"`
 
 	TEST_DB_HOST          string `mapstructure:"TEST_DB_HOST"`
@@ -65,6 +66,7 @@ type BaseConfig struct {
 	TEST_TRANSACTIONS_DB  string `mapstructure:"TEST_TRANSACTIONS_DB"`
 	TEST_VERIFICATION_DB  string `mapstructure:"TEST_VERIFICATION_DB"`
 	TEST_CRON_DB          string `mapstructure:"TEST_CRON_DB"`
+	TEST_MOR_API_DB       string `mapstructure:"TEST_MOR_API_DB"`
 	TEST_MIGRATE          bool   `mapstructure:"TEST_MIGRATE"`
 
 	MS_ADMIN        string `mapstructure:"MS_ADMIN"`
@@ -160,6 +162,7 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 			TRANSACTIONS_DB:  config.TRANSACTIONS_DB,
 			VERIFICATION_DB:  config.VERIFICATION_DB,
 			CRON_DB:          config.CRON_DB,
+			MOR_DB:           config.MOR_API_DB,
 			Migrate:          config.MIGRATE,
 		},
 		TestDatabases: Databases{
@@ -179,6 +182,7 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 			TRANSACTIONS_DB:  config.TEST_TRANSACTIONS_DB,
 			VERIFICATION_DB:  config.TEST_VERIFICATION_DB,
 			CRON_DB:          config.TEST_CRON_DB,
+			MOR_DB:           config.TEST_MOR_API_DB,
 			Migrate:          config.TEST_MIGRATE,
 		},
 		Microservices: Microservices{

@@ -23,6 +23,7 @@ type Databases struct {
 	Transaction   *gorm.DB
 	Verification  *gorm.DB
 	Cron          *gorm.DB
+	MOR           *gorm.DB
 }
 
 var DB Databases
@@ -36,15 +37,7 @@ func ConnectToDatabases(logger *utility.Logger, configDatabases config.Databases
 	dbsCV := configDatabases
 	databases := Databases{}
 	utility.LogAndPrint(logger, "connecting to databases")
-	// databases.Admin = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.ADMIN_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
-	// databases.Auth = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.AUTH_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
-	// databases.Notifications = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.NOTIFICATIONS_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
-	databases.Payment = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.PAYMENT_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
-	// databases.Reminder = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.REMINDERS_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
-	// databases.Subscription = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.SUBSCRIPTIONS_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
-	// databases.Transaction = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.TRANSACTIONS_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
-	// databases.Verification = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.VERIFICATION_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
-	// databases.Cron = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.CRON_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
+	databases.MOR = connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.MOR_DB, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
 
 	utility.LogAndPrint(logger, "connected to databases")
 
@@ -100,6 +93,8 @@ func ReturnDatabase(name string) *gorm.DB {
 		return DB.Verification
 	case "cron":
 		return DB.Cron
+	case "mor":
+		return DB.MOR
 	default:
 		return databases.Auth
 	}

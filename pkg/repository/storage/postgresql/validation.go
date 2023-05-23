@@ -168,6 +168,8 @@ func (vr ValidateRequestM) ValidationCheck(dbName string, table, checkType strin
 		return checkForConnectedDB(db, table, checkType, query, args...)
 	case "cron":
 		return checkForConnectedDB(db, table, checkType, query, args...)
+	case "mor":
+		return checkForConnectedDB(db, table, checkType, query, args...)
 	default:
 		return false
 	}
