@@ -1,6 +1,12 @@
 package models
 
-import "time"
+import (
+	"fmt"
+	"time"
+
+	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
+	"gorm.io/gorm"
+)
 
 type PaymentHistory struct {
 	ID              uint      `gorm:"column:id; type:uint; not null; primaryKey; unique; autoIncrement" json:"id"`
@@ -13,4 +19,12 @@ type PaymentHistory struct {
 	Status          string    `gorm:"column:status; type:varchar(255)" json:"status"`
 	CreatedAt       time.Time `gorm:"column:created_at; autoCreateTime" json:"created_at"`
 	UpdatedAt       time.Time `gorm:"column:updated_at; autoUpdateTime" json:"updated_at"`
+}
+
+func (p *PaymentHistory) CreatePaymentHistory(db *gorm.DB) error {
+	err := postgresql.CreateOneRecord(db, &p)
+	if err != nil {
+		return fmt.Errorf("payment history creation failed: %v", err.Error())
+	}
+	return nil
 }
