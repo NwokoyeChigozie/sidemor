@@ -15,6 +15,11 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	mor := mor.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
+	morUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
+	{
+		morUrl.POST("/webhook/:account_id", mor.MerchantWebhooks)
+	}
+
 	morjobsUrl := r.Group(fmt.Sprintf("%v/jobs", ApiVersion))
 	{
 		morjobsUrl.POST("/start", mor.StartCronJob)
