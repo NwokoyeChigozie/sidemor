@@ -10,6 +10,7 @@ import (
 	"github.com/vesicash/mor-api/internal/models"
 	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
 	"github.com/vesicash/mor-api/services/providers"
+	"github.com/vesicash/mor-api/utility"
 )
 
 func MerchantWebhooksService(c *gin.Context, extReq request.ExternalRequest, db postgresql.Databases, requestBody []byte) (int, error) {
@@ -48,6 +49,10 @@ func GetProvider(c *gin.Context, requestBody []byte) (string, error) {
 	var (
 		provider string
 	)
+
+	if utility.GetHeader(c, "verif-hash") != "" {
+		provider = "rave"
+	}
 
 	// rave, e-transact, paystack
 	return provider, nil
