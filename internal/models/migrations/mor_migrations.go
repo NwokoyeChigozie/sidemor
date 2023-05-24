@@ -10,5 +10,6 @@ func AuthMigrationModels() []interface{} {
 		models.PaymentModule{},
 		models.PaymentOrder{},
 		models.Setting{},
+		models.WebhookLog{},
 	}
 }

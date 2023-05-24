@@ -1,4 +1,4 @@
-package mor
+package services
 
 import (
 	"fmt"
