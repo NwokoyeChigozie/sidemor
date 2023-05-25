@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/vesicash/mor-api/external/request"
 	"github.com/vesicash/mor-api/pkg/controller/mor"
+	"github.com/vesicash/mor-api/pkg/middleware"
 	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
 	"github.com/vesicash/mor-api/utility"
 )
@@ -20,6 +21,12 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 		morUrl.POST("/webhook/:account_id", mor.MerchantWebhooks)
 	}
 
+	paymentApiUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db, extReq, middleware.ApiType))
+	{
+		paymentApiUrl.GET("/customers", mor.GetCustomers)
+
+	}
+
 	morjobsUrl := r.Group(fmt.Sprintf("%v/jobs", ApiVersion))
 	{
 		morjobsUrl.POST("/start", mor.StartCronJob)
@@ -27,5 +34,6 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 		morjobsUrl.POST("/stop", mor.StopCronJob)
 		morjobsUrl.PATCH("/update_interval", mor.UpdateCronJobInterval)
 	}
+
 	return r
 }

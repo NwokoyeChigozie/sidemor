@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
@@ -44,6 +45,32 @@ func (c *Customer) GetCustomerByAccountIDAndEmail(db *gorm.DB) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 	return http.StatusOK, nil
+}
+
+func (c *Customer) GetCustomers(db *gorm.DB, paginator postgresql.Pagination, search string) ([]Customer, postgresql.PaginationResponse, error) {
+	var (
+		details    = []Customer{}
+		extraQuery string
+	)
+
+	if search != "" {
+		extraQuery += fmt.Sprintf(` and (
+			Lower(email) = '%[1]v'
+			or Lower(firstname) = '%[1]v'
+			or Lower(lastname) = '%[1]v'
+			or Lower(address) = '%[1]v'
+			or Lower(city) = '%[1]v'
+			or Lower(state) = '%[1]v'
+			or Lower(phone_number) = '%[1]v'
+			or Lower(country_id) = '%[1]v'
+			or Lower(number_of_payments) = '%[1]v'
+			)`, strings.ToLower(search))
+	}
+	pagination, err := postgresql.SelectAllFromDbOrderByPaginated(db, "id", "desc", paginator, &details, fmt.Sprintf("account_id = ? %v", extraQuery), c.AccountID)
+	if err != nil {
+		return details, pagination, err
+	}
+	return details, pagination, nil
 }
 
 func (c *Customer) UpdateAllFields(db *gorm.DB) error {
