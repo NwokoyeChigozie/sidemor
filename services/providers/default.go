@@ -8,6 +8,8 @@ import (
 
 var (
 	paymentHistorySuccessful = "successful"
+	paymentHistoryFailed     = "failed"
+	paymentHistoryPending    = "pending"
 )
 
 func HandleDefaultMerchantWebhook(c *gin.Context, extReq request.ExternalRequest, db postgresql.Databases, requestBody []byte) error {

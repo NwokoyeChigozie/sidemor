@@ -14,10 +14,10 @@ import (
 	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
 )
 
-func HandleRaveMerchantWebhook(c *gin.Context, extReq request.ExternalRequest, db postgresql.Databases, requestBody []byte) error {
+func HandleFlutterwaveMerchantWebhook(c *gin.Context, extReq request.ExternalRequest, db postgresql.Databases, requestBody []byte) error {
 	var (
-		req            models.RaveWebhookRequest
-		data           models.RaveWebhookRequestData
+		req            models.FlutterwaveWebhookRequest
+		data           models.FlutterwaveWebhookRequestData
 		customer       models.Customer
 		paymentHistory models.PaymentHistory
 		accountIDStr   = c.Param("account_id")
@@ -70,7 +70,7 @@ func HandleRaveMerchantWebhook(c *gin.Context, extReq request.ExternalRequest, d
 
 	switch req.Event {
 	case "charge.completed":
-		paymentHistory, err = getRavePaymentHistoryForChargeCompleted(req, &customer)
+		paymentHistory, err = getFlutterwavePaymentHistoryForChargeCompleted(req, &customer)
 	default:
 		return fmt.Errorf("event type %v, not implemented", req.Event)
 	}
@@ -92,7 +92,7 @@ func HandleRaveMerchantWebhook(c *gin.Context, extReq request.ExternalRequest, d
 	return nil
 }
 
-func getRavePaymentHistoryForChargeCompleted(req models.RaveWebhookRequest, customer *models.Customer) (models.PaymentHistory, error) {
+func getFlutterwavePaymentHistoryForChargeCompleted(req models.FlutterwaveWebhookRequest, customer *models.Customer) (models.PaymentHistory, error) {
 	var (
 		paymentHistory = models.PaymentHistory{
 			CustomerID: int64(customer.ID),
@@ -118,7 +118,7 @@ func getRavePaymentHistoryForChargeCompleted(req models.RaveWebhookRequest, cust
 	if data.CreatedAt != nil {
 		t, err := time.Parse("2006-01-02T15:04:05.000Z", *data.CreatedAt)
 		if err != nil {
-			return models.PaymentHistory{}, fmt.Errorf("rave webhhook log error, error parsing data.DateCreated, %v, %v", *data.CreatedAt, err.Error())
+			return models.PaymentHistory{}, fmt.Errorf("Flutterwave webhhook log error, error parsing data.DateCreated, %v, %v", *data.CreatedAt, err.Error())
 		}
 		customer.LastPaymentMadeAt = t
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/vesicash/mor-api/external/request"
+	"github.com/vesicash/mor-api/internal/config"
 	"github.com/vesicash/mor-api/internal/models"
 	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
 	"github.com/vesicash/mor-api/services/providers"
@@ -27,8 +28,8 @@ func MerchantWebhooksService(c *gin.Context, extReq request.ExternalRequest, db 
 	logWebhookData(extReq, db, provider, requestBody)
 
 	switch strings.ToLower(provider) {
-	case "rave":
-		err = providers.HandleRaveMerchantWebhook(c, extReq, db, requestBody)
+	case "flutterwave":
+		err = providers.HandleFlutterwaveMerchantWebhook(c, extReq, db, requestBody)
 	case "e-transact":
 		err = providers.HandleETransactMerchantWebhook(c, extReq, db, requestBody)
 	case "paystack":
@@ -51,10 +52,13 @@ func GetProvider(c *gin.Context, requestBody []byte) (string, error) {
 	)
 
 	if utility.GetHeader(c, "verif-hash") != "" {
-		provider = "rave"
+		provider = "flutterwave"
+		if config.GetConfig().Rave.WebhookSecret != utility.GetHeader(c, "verif-hash") {
+			return provider, fmt.Errorf("secret key doesn't match")
+		}
 	}
 
-	// rave, e-transact, paystack
+	// flutterwave, e-transact, paystack
 	return provider, nil
 }
 
