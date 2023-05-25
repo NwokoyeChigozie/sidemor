@@ -21,7 +21,7 @@ func (base *Controller) MerchantWebhooks(c *gin.Context) {
 		return
 	}
 
-	rd := utility.BuildSuccessResponse(http.StatusOK, "successfull", nil)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "successful", nil)
 	c.JSON(http.StatusOK, rd)
 
 }
