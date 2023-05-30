@@ -2,14 +2,6 @@ package models
 
 import "time"
 
-type VerificationStatus string
-
-var (
-	NotVerified VerificationStatus = "not_verified"
-	Pending     VerificationStatus = "pending"
-	Verified    VerificationStatus = "verified"
-)
-
 type PaymentModule struct {
 	ID               uint                        `gorm:"column:id; type:uint; not null; primaryKey; unique; autoIncrement" json:"id"`
 	AccountID        int64                       `gorm:"column:account_id; type:int; not null" json:"account_id"`

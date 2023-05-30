@@ -7,3 +7,4 @@ datasources.yaml
 Docker-compose.yml
 prometheus.yml
 grafana.yaml
+start-all-services.sh

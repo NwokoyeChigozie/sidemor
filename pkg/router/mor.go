@@ -21,10 +21,11 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 		morUrl.POST("/webhook/:account_id", mor.MerchantWebhooks)
 	}
 
-	paymentApiUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db, extReq, middleware.ApiType))
+	paymentApiUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db, extReq, middleware.AuthType))
 	{
 		paymentApiUrl.GET("/customers", mor.GetCustomers)
-
+		paymentApiUrl.POST("/save-settings", mor.SaveSettings)
+		paymentApiUrl.POST("/get-settings", mor.GetSettings)
 	}
 
 	morjobsUrl := r.Group(fmt.Sprintf("%v/jobs", ApiVersion))
