@@ -19,7 +19,7 @@ func HandleFlutterwaveMerchantWebhook(c *gin.Context, extReq request.ExternalReq
 		req            models.FlutterwaveWebhookRequest
 		data           models.FlutterwaveWebhookRequestData
 		customer       models.Customer
-		paymentHistory models.PaymentHistory
+		paymentHistory models.Transaction
 		accountIDStr   = c.Param("account_id")
 	)
 
@@ -79,7 +79,7 @@ func HandleFlutterwaveMerchantWebhook(c *gin.Context, extReq request.ExternalReq
 		return err
 	}
 
-	err = paymentHistory.CreatePaymentHistory(db.MOR)
+	err = paymentHistory.CreateTransaction(db.MOR)
 	if err != nil {
 		return err
 	}
@@ -92,9 +92,9 @@ func HandleFlutterwaveMerchantWebhook(c *gin.Context, extReq request.ExternalReq
 	return nil
 }
 
-func getFlutterwavePaymentHistoryForChargeCompleted(req models.FlutterwaveWebhookRequest, customer *models.Customer) (models.PaymentHistory, error) {
+func getFlutterwavePaymentHistoryForChargeCompleted(req models.FlutterwaveWebhookRequest, customer *models.Customer) (models.Transaction, error) {
 	var (
-		paymentHistory = models.PaymentHistory{
+		paymentHistory = models.Transaction{
 			CustomerID: int64(customer.ID),
 		}
 		data = *req.Data
@@ -118,7 +118,7 @@ func getFlutterwavePaymentHistoryForChargeCompleted(req models.FlutterwaveWebhoo
 	if data.CreatedAt != nil {
 		t, err := time.Parse("2006-01-02T15:04:05.000Z", *data.CreatedAt)
 		if err != nil {
-			return models.PaymentHistory{}, fmt.Errorf("Flutterwave webhhook log error, error parsing data.DateCreated, %v, %v", *data.CreatedAt, err.Error())
+			return models.Transaction{}, fmt.Errorf("Flutterwave webhhook log error, error parsing data.DateCreated, %v, %v", *data.CreatedAt, err.Error())
 		}
 		customer.LastPaymentMadeAt = t
 	}

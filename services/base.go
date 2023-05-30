@@ -166,14 +166,36 @@ func GetCountryByNameOrCode(extReq request.ExternalRequest, logger *utility.Logg
 
 	if err != nil {
 		logger.Error(err.Error())
-		return external_models.Country{}, fmt.Errorf("your country could not be resolved, please update your profile")
+		return external_models.Country{}, fmt.Errorf("your country could not be resolved")
 	}
 	country, ok := countryInterface.(external_models.Country)
 	if !ok {
 		return external_models.Country{}, fmt.Errorf("response data format error")
 	}
 	if country.ID == 0 {
-		return external_models.Country{}, fmt.Errorf("your country could not be resolved, please update your profile")
+		return external_models.Country{}, fmt.Errorf("your country could not be resolved")
+	}
+
+	return country, nil
+}
+
+func GetCountryByID(extReq request.ExternalRequest, logger *utility.Logger, id int) (external_models.Country, error) {
+
+	countryInterface, err := extReq.SendExternalRequest(request.GetCountry, external_models.GetCountryModel{
+		ID: uint(id),
+	})
+
+	if err != nil {
+		logger.Error(err.Error())
+		return external_models.Country{}, fmt.Errorf("country not found")
+	}
+
+	country, ok := countryInterface.(external_models.Country)
+	if !ok {
+		return external_models.Country{}, fmt.Errorf("response data format error")
+	}
+	if country.ID == 0 {
+		return external_models.Country{}, fmt.Errorf("country not found")
 	}
 
 	return country, nil

@@ -6,10 +6,10 @@ import "github.com/vesicash/mor-api/internal/models"
 func AuthMigrationModels() []interface{} {
 	return []interface{}{
 		models.Customer{},
-		models.PaymentHistory{},
 		models.PaymentModule{},
 		models.PaymentOrder{},
 		models.Setting{},
+		models.Transaction{},
 		models.WebhookLog{},
 	}
 }

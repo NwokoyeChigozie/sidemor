@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type PaymentHistory struct {
+type Transaction struct {
 	ID              uint      `gorm:"column:id; type:uint; not null; primaryKey; unique; autoIncrement" json:"id"`
 	CustomerID      int64     `gorm:"column:customer_id; type:int" json:"customer_id"`
 	PaymentModuleID int64     `gorm:"column:payment_module_id; type:int" json:"payment_module_id"`
@@ -21,10 +21,10 @@ type PaymentHistory struct {
 	UpdatedAt       time.Time `gorm:"column:updated_at; autoUpdateTime" json:"updated_at"`
 }
 
-func (p *PaymentHistory) CreatePaymentHistory(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &p)
+func (t *Transaction) CreateTransaction(db *gorm.DB) error {
+	err := postgresql.CreateOneRecord(db, &t)
 	if err != nil {
-		return fmt.Errorf("payment history creation failed: %v", err.Error())
+		return fmt.Errorf("Transaction creation failed: %v", err.Error())
 	}
 	return nil
 }
