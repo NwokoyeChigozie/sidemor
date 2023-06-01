@@ -70,3 +70,43 @@ func (base *Controller) GetSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 
 }
+
+func (base *Controller) EnableOrDisablePaymentMethods(c *gin.Context) {
+	var (
+		req    models.EnableOrDisablePaymentMethodsRequest
+		action = c.Param("action")
+	)
+
+	err := c.ShouldBind(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err = base.Validator.Struct(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	user := models.MyIdentity
+	if user == nil {
+		msg := "error retrieving authenticated user"
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", msg, fmt.Errorf(msg), nil)
+		c.JSON(http.StatusInternalServerError, rd)
+		return
+	}
+
+	settings, code, err := mor.EnableOrDisablePaymentMethodsService(base.ExtReq, base.Db, *user, action, req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "successfully saved", settings)
+	c.JSON(http.StatusOK, rd)
+
+}

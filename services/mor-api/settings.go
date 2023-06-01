@@ -108,3 +108,46 @@ func GetSettingsService(extReq request.ExternalRequest, db postgresql.Databases,
 
 	return &setting, http.StatusOK, nil
 }
+
+func EnableOrDisablePaymentMethodsService(extReq request.ExternalRequest, db postgresql.Databases, user external_models.User, action string, req models.EnableOrDisablePaymentMethodsRequest) (models.Setting, int, error) {
+	var (
+		setting = models.Setting{AccountID: int64(user.AccountID)}
+	)
+
+	code, err := setting.GetSettingByAccountID(db.MOR)
+	if err != nil {
+		if code == http.StatusInternalServerError {
+			return models.Setting{}, code, err
+		}
+
+		err := setting.CreateSetting(db.MOR)
+		if err != nil {
+			return models.Setting{}, http.StatusInternalServerError, err
+		}
+	}
+
+	paymentMethods := setting.PaymentMethods
+	if strings.EqualFold(action, "enable") {
+		for _, p := range req.Methods {
+			if !p.In(paymentMethods) {
+				paymentMethods = append(paymentMethods, p)
+			}
+		}
+	} else if strings.EqualFold(action, "disable") {
+		newPaymentMethods := []models.PaymentMethod{}
+		for _, v := range setting.PaymentMethods {
+			if !v.In(req.Methods) {
+				newPaymentMethods = append(newPaymentMethods, v)
+			}
+		}
+		paymentMethods = newPaymentMethods
+	}
+
+	setting.PaymentMethods = paymentMethods
+	err = setting.UpdateAllFields(db.MOR)
+	if err != nil {
+		return setting, http.StatusInternalServerError, err
+	}
+
+	return setting, http.StatusOK, nil
+}
