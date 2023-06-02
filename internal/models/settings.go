@@ -10,11 +10,28 @@ import (
 )
 
 type VerificationStatus string
+type PaymentMethod string
 
 var (
 	NotVerified         VerificationStatus = "not_verified"
 	VerificationPending VerificationStatus = "pending"
 	Verified            VerificationStatus = "verified"
+)
+
+var (
+	CardMethod              PaymentMethod = "card"
+	AccountMethod           PaymentMethod = "account"
+	BankTransferMethod      PaymentMethod = "banktransfer"
+	MpesaMethod             PaymentMethod = "mpesa"
+	MobileMoneyGhanaMethod  PaymentMethod = "mobilemoneyghana"
+	MobileMoneyFrancoMethod PaymentMethod = "mobilemoneyfranco"
+	MobileMoneyUgandaMethod PaymentMethod = "mobilemoneyuganda"
+	MobileMoneyRwandaMethod PaymentMethod = "mobilemoneyrwanda"
+	MobileMoneyZambiaMethod PaymentMethod = "mobilemoneyzambia"
+	BarterMethod            PaymentMethod = "barter"
+	NqrMethod               PaymentMethod = "nqr"
+	UssdMethod              PaymentMethod = "ussd"
+	CreditMethod            PaymentMethod = "credit"
 )
 
 type Setting struct {
@@ -25,6 +42,7 @@ type Setting struct {
 	Countries      []SettingsCountries    `gorm:"column:countries;serializer:json" json:"countries"`
 	Verifications  []SettingsVerification `gorm:"column:verifications;serializer:json" json:"verifications"`
 	CurrencyCodes  []string               `gorm:"column:currency_codes;serializer:json" json:"currency_codes"`
+	PaymentMethods []PaymentMethod        `gorm:"column:payment_methods;serializer:json" json:"payment_methods"`
 	CreatedAt      time.Time              `gorm:"column:created_at; autoCreateTime" json:"created_at"`
 	UpdatedAt      time.Time              `gorm:"column:updated_at; autoUpdateTime" json:"updated_at"`
 }
@@ -48,6 +66,9 @@ type SaveSettingsRequest struct {
 	UsageType           string                        `json:"usage_type"  validate:"required,oneof=second minute hour day week month year"`
 	IntervalBase        string                        `json:"interval_base" validate:"required,oneof=online offline"`
 	Documents           []SettingsVerificationRequest `json:"documents" validate:"required"`
+}
+type EnableOrDisablePaymentMethodsRequest struct {
+	Methods []PaymentMethod `json:"methods"  validate:"required"`
 }
 
 type SettingsVerificationRequest struct {
@@ -78,4 +99,13 @@ func (s *Setting) GetSettingByAccountID(db *gorm.DB) (int, error) {
 func (s *Setting) UpdateAllFields(db *gorm.DB) error {
 	_, err := postgresql.SaveAllFields(db, &s)
 	return err
+}
+
+func (p PaymentMethod) In(methods []PaymentMethod) bool {
+	for _, v := range methods {
+		if p == v {
+			return true
+		}
+	}
+	return false
 }
