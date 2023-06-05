@@ -71,6 +71,10 @@ type EnableOrDisablePaymentMethodsRequest struct {
 	Methods []PaymentMethod `json:"methods"  validate:"required"`
 }
 
+type AddRemoveOrGetWalletsRequest struct {
+	CurrencyCodes []string `json:"currency_codes"`
+}
+
 type SettingsVerificationRequest struct {
 	DocumentUrl string `json:"document_url"`
 	CountryID   uint   `json:"country_id"`

@@ -64,3 +64,32 @@ func (r *RequestObj) GetRateByID() (external_models.Rate, error) {
 
 	return outBoundResponse.Data, nil
 }
+
+func (r *RequestObj) GetRateByFromAndToCurrencies() (external_models.Rate, error) {
+	var (
+		outBoundResponse external_models.RateResponse
+		logger           = r.Logger
+		idata            = r.RequestData
+		appKey           = config.GetConfig().App.Key
+	)
+	data, ok := idata.(external_models.RateRequest)
+	if !ok {
+		logger.Error("get rate by from and to currencies", idata, "request data format error")
+		return outBoundResponse.Data, fmt.Errorf("request data format error")
+	}
+
+	headers := map[string]string{
+		"Content-Type": "application/json",
+		"v-app":        appKey,
+	}
+
+	logger.Info("get rate by from and to currencies", data)
+	err := r.getNewSendRequestObject(data, headers, fmt.Sprintf("/%v/%v", data.FromCurrency, data.ToCurrency)).SendRequest(&outBoundResponse)
+	if err != nil {
+		logger.Error("get rate by from and to currencies", outBoundResponse, err.Error())
+		return outBoundResponse.Data, err
+	}
+	logger.Info("get rate by from and to currencies", outBoundResponse)
+
+	return outBoundResponse.Data, nil
+}

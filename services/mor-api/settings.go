@@ -151,3 +151,123 @@ func EnableOrDisablePaymentMethodsService(extReq request.ExternalRequest, db pos
 
 	return setting, http.StatusOK, nil
 }
+
+func AddRemoveOrGetWalletsService(extReq request.ExternalRequest, db postgresql.Databases, user external_models.User, action string, req models.AddRemoveOrGetWalletsRequest) ([]external_models.WalletBalance, int, error) {
+	var (
+		setting = models.Setting{AccountID: int64(user.AccountID)}
+	)
+
+	code, err := setting.GetSettingByAccountID(db.MOR)
+	if err != nil {
+		if code == http.StatusInternalServerError {
+			return []external_models.WalletBalance{}, code, err
+		}
+
+		err := setting.CreateSetting(db.MOR)
+		if err != nil {
+			return []external_models.WalletBalance{}, http.StatusInternalServerError, err
+		}
+	}
+
+	currencies := setting.CurrencyCodes
+	if strings.EqualFold(action, "add") {
+		currencies, err = handleAddCurrencies(extReq, db, int(user.AccountID), currencies, req.CurrencyCodes)
+	} else if strings.EqualFold(action, "delete") {
+		currencies, err = handleRemoveCurrencies(extReq, db, int(user.AccountID), currencies, req.CurrencyCodes)
+	} else if strings.EqualFold(action, "get") {
+		if len(req.CurrencyCodes) > 0 {
+			wallets, err := services.GetWalletBalancesByCurrencies(extReq, db, int(user.AccountID), req.CurrencyCodes)
+			if err != nil {
+				return wallets, http.StatusInternalServerError, err
+			}
+			return wallets, http.StatusOK, nil
+		}
+	}
+
+	if err != nil {
+		return []external_models.WalletBalance{}, http.StatusInternalServerError, err
+	}
+
+	setting.CurrencyCodes = currencies
+	err = setting.UpdateAllFields(db.MOR)
+	if err != nil {
+		return []external_models.WalletBalance{}, http.StatusInternalServerError, err
+	}
+
+	wallets, err := services.GetWalletBalancesByCurrencies(extReq, db, int(user.AccountID), currencies)
+	if err != nil {
+		return wallets, http.StatusInternalServerError, err
+	}
+
+	return wallets, http.StatusOK, nil
+}
+
+func handleAddCurrencies(extReq request.ExternalRequest, db postgresql.Databases, accountID int, availableCurrencies []string, newCurrencies []string) ([]string, error) {
+
+	for _, c := range newCurrencies {
+		c = strings.ToUpper(c)
+		morCurrency := fmt.Sprintf("MOR_%v", c)
+		if !utility.InStringSlice(c, availableCurrencies) {
+			_, err := services.CreateWalletBalance(extReq, accountID, morCurrency, 0)
+			if err != nil {
+				return availableCurrencies, err
+			}
+
+			availableCurrencies = append(availableCurrencies, c)
+		}
+	}
+	return availableCurrencies, nil
+}
+
+func handleRemoveCurrencies(extReq request.ExternalRequest, db postgresql.Databases, accountID int, availableCurrencies []string, removeCurrencies []string) ([]string, error) {
+
+	for _, c := range removeCurrencies {
+		c = strings.ToUpper(c)
+		creditWallet := "MOR_USD"
+		morCurrency := fmt.Sprintf("MOR_%v", c)
+		if utility.InStringSlice(c, availableCurrencies) {
+			if c == "USD" {
+				continue
+			}
+
+			rate, err := services.GetRateByCurrencies(extReq, c, "USD")
+			if err != nil {
+				extReq.Logger.Error(fmt.Sprintf("error getting rate for currencies %v -> %v: %v", c, "USD", err.Error()))
+				continue
+			}
+
+			walletBalance, _ := services.GetWalletBalanceByAccountIdAndCurrency(extReq, accountID, morCurrency)
+			initialBalance := walletBalance.Available
+
+			if initialBalance <= 0 || rate.ID <= 0 {
+				continue
+			}
+
+			var multiplier float64 = 0
+			if rate.InitialAmount > 0 {
+				multiplier = rate.Amount / rate.InitialAmount
+			}
+
+			convertedBalance := multiplier * initialBalance
+
+			err = services.CreateExchangeTransaction(extReq, accountID, int(rate.ID), initialBalance, convertedBalance, "completed")
+			if err != nil {
+				return availableCurrencies, err
+			}
+
+			_, err = services.DebitWallet(extReq, db, initialBalance, morCurrency, accountID, "no", "no", "")
+			if err != nil {
+				return availableCurrencies, err
+			}
+
+			_, err = services.CreditWallet(extReq, db, convertedBalance, creditWallet, accountID, false, "no", "no", "")
+			if err != nil {
+				return availableCurrencies, err
+			}
+
+			availableCurrencies = utility.RemoveString(availableCurrencies, c)
+		}
+	}
+
+	return availableCurrencies, nil
+}

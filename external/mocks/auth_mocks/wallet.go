@@ -119,3 +119,28 @@ func CreateWalletTransaction(logger *utility.Logger, idata interface{}) (externa
 		FirstApproval:     data.FirstApproval,
 	}, nil
 }
+
+func GetWalletBalancesByAccountIDAndCurrencies(logger *utility.Logger, idata interface{}) ([]external_models.WalletBalance, error) {
+
+	var (
+		outBoundResponse external_models.WalletBalancesResponse
+		wallets          = []external_models.WalletBalance{}
+	)
+
+	data, ok := idata.(external_models.GetWalletsRequest)
+	if !ok {
+		logger.Error("get wallets", idata, "request data format error")
+		return outBoundResponse.Data, fmt.Errorf("request data format error")
+	}
+
+	logger.Info("get wallets", outBoundResponse)
+	for _, c := range data.Currencies {
+		wallets = append(wallets, external_models.WalletBalance{
+			AccountID: data.AccountID,
+			Currency:  c,
+			Available: 20000,
+		})
+	}
+
+	return wallets, nil
+}

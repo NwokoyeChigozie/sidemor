@@ -162,3 +162,34 @@ func (r *RequestObj) CreateWalletTransaction() (external_models.WalletTransactio
 
 	return outBoundResponse.Data, nil
 }
+
+func (r *RequestObj) GetWalletBalancesByAccountIDAndCurrencies() ([]external_models.WalletBalance, error) {
+
+	var (
+		appKey           = config.GetConfig().App.Key
+		outBoundResponse external_models.WalletBalancesResponse
+		logger           = r.Logger
+		idata            = r.RequestData
+	)
+
+	data, ok := idata.(external_models.GetWalletsRequest)
+	if !ok {
+		logger.Error("get wallets", idata, "request data format error")
+		return outBoundResponse.Data, fmt.Errorf("request data format error")
+	}
+
+	headers := map[string]string{
+		"Content-Type": "application/json",
+		"v-app":        appKey,
+	}
+
+	logger.Info("get wallets", data)
+	err := r.getNewSendRequestObject(data, headers, fmt.Sprintf("/%v", strconv.Itoa(data.AccountID))).SendRequest(&outBoundResponse)
+	if err != nil {
+		logger.Error("get wallets", outBoundResponse, err.Error())
+		return outBoundResponse.Data, err
+	}
+	logger.Info("get wallets", outBoundResponse)
+
+	return outBoundResponse.Data, nil
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/vesicash/mor-api/external/external_models"
 	"github.com/vesicash/mor-api/external/request"
+	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
 	"github.com/vesicash/mor-api/utility"
 )
 
@@ -533,4 +534,115 @@ func thisOrThatStr(this, that string) string {
 		return that
 	}
 	return this
+}
+
+func DebitWallet(extReq request.ExternalRequest, db postgresql.Databases, amount float64, currency string, businessID int, creditEscrow string, creditMor string, transactionID string) (external_models.WalletBalance, error) {
+	walletItf, err := extReq.SendExternalRequest(request.DebitWallet, external_models.DebitWalletRequest{
+		Amount:        amount,
+		Currency:      currency,
+		BusinessID:    businessID,
+		EscrowWallet:  creditEscrow,
+		MorWallet:     creditMor,
+		TransactionID: transactionID,
+	})
+	if err != nil {
+		return external_models.WalletBalance{}, err
+	}
+
+	walletBalance, ok := walletItf.(external_models.WalletBalance)
+	if !ok {
+		return external_models.WalletBalance{}, fmt.Errorf("response data format error")
+	}
+
+	return walletBalance, nil
+}
+
+func CreditWallet(extReq request.ExternalRequest, db postgresql.Databases, amount float64, currency string, businessID int, isRefund bool, creditEscrow string, creditMor string, transactionID string) (external_models.WalletBalance, error) {
+	walletItf, err := extReq.SendExternalRequest(request.CreditWallet, external_models.CreditWalletRequest{
+		Amount:        amount,
+		Currency:      currency,
+		BusinessID:    businessID,
+		EscrowWallet:  creditEscrow,
+		MorWallet:     creditMor,
+		TransactionID: transactionID,
+		IsRefund:      isRefund,
+	})
+	if err != nil {
+		return external_models.WalletBalance{}, err
+	}
+
+	walletBalance, ok := walletItf.(external_models.WalletBalance)
+	if !ok {
+		return external_models.WalletBalance{}, fmt.Errorf("response data format error")
+	}
+
+	return walletBalance, nil
+}
+
+func GetWalletBalancesByCurrencies(extReq request.ExternalRequest, db postgresql.Databases, accountID int, currencies []string) ([]external_models.WalletBalance, error) {
+	walletItf, err := extReq.SendExternalRequest(request.GetWalletsByCurrencies, external_models.GetWalletsRequest{
+		AccountID:  accountID,
+		Currencies: currencies,
+	})
+	if err != nil {
+		return []external_models.WalletBalance{}, err
+	}
+
+	walletBalances, ok := walletItf.([]external_models.WalletBalance)
+	if !ok {
+		return []external_models.WalletBalance{}, fmt.Errorf("response data format error")
+	}
+
+	return walletBalances, nil
+}
+
+func CreateWalletBalance(extReq request.ExternalRequest, accountID int, currency string, available float64) (external_models.WalletBalance, error) {
+	walletItf, err := extReq.SendExternalRequest(request.CreateWalletBalance, external_models.CreateWalletRequest{
+		AccountID: uint(accountID),
+		Currency:  strings.ToUpper(currency),
+		Available: available,
+	})
+	if err != nil {
+		return external_models.WalletBalance{}, err
+	}
+
+	wallet, ok := walletItf.(external_models.WalletBalance)
+	if !ok {
+		return wallet, fmt.Errorf("response data format error")
+	}
+
+	return wallet, nil
+}
+
+func GetWalletBalanceByAccountIdAndCurrency(extReq request.ExternalRequest, accountID int, currency string) (external_models.WalletBalance, error) {
+	walletItf, err := extReq.SendExternalRequest(request.GetWalletBalanceByAccountIDAndCurrency, external_models.GetWalletRequest{
+		AccountID: uint(accountID),
+		Currency:  strings.ToUpper(currency),
+	})
+	if err != nil {
+		return external_models.WalletBalance{}, err
+	}
+
+	wallet, ok := walletItf.(external_models.WalletBalance)
+	if !ok {
+		return wallet, fmt.Errorf("response data format error")
+	}
+
+	return wallet, nil
+}
+func GetRateByCurrencies(extReq request.ExternalRequest, fromCurrency, toCurrency string) (external_models.Rate, error) {
+	rateItf, err := extReq.SendExternalRequest(request.GetRateByFromAndToCurrencies, external_models.RateRequest{
+		FromCurrency: fromCurrency,
+		ToCurrency:   toCurrency,
+	})
+	if err != nil {
+		return external_models.Rate{}, err
+	}
+
+	rate, ok := rateItf.(external_models.Rate)
+	if !ok {
+		return rate, fmt.Errorf("response data format error")
+	}
+
+	return rate, nil
 }

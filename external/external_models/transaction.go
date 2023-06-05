@@ -124,6 +124,10 @@ type Rate struct {
 	Uid           string  `json:"uid"`
 	InitialAmount float64 `json:"initial_amount"`
 }
+type RateRequest struct {
+	FromCurrency string `json:"from_currency"`
+	ToCurrency   string `json:"to_currency"`
+}
 type RateResponse struct {
 	Status  string `json:"status"`
 	Code    int    `json:"code"`
