@@ -5,6 +5,7 @@ import (
 
 	"github.com/vesicash/mor-api/external/microservice/auth"
 	"github.com/vesicash/mor-api/external/microservice/notification"
+	"github.com/vesicash/mor-api/external/microservice/payment"
 	"github.com/vesicash/mor-api/external/microservice/transactions"
 	"github.com/vesicash/mor-api/external/microservice/upload"
 	"github.com/vesicash/mor-api/external/microservice/verification"
@@ -117,6 +118,11 @@ var (
 	GetAccessTokenByBusinessID          string = "get_access_token_by_busines_id"
 	CheckVerification                   string = "check_verification"
 	ListTransactions                    string = "list_transactions"
+
+	DebitWallet                  string = "debit_wallet"
+	CreditWallet                 string = "credit_wallet"
+	GetWalletsByCurrencies       string = "get_wallets_by_currencies"
+	GetRateByFromAndToCurrencies string = "get_rate_by_from_and_to_currencies"
 )
 
 func (er ExternalRequest) SendExternalRequest(name string, data interface{}) (interface{}, error) {
@@ -928,6 +934,50 @@ func (er ExternalRequest) SendExternalRequest(name string, data interface{}) (in
 				Logger:       er.Logger,
 			}
 			return obj.ListTransactions()
+		case "debit_wallet":
+			obj := payment.RequestObj{
+				Name:         name,
+				Path:         fmt.Sprintf("%v/v2/wallet/debit", config.Microservices.Payment),
+				Method:       "POST",
+				SuccessCode:  200,
+				DecodeMethod: JsonDecodeMethod,
+				RequestData:  data,
+				Logger:       er.Logger,
+			}
+			return obj.DebitWallet()
+		case "credit_wallet":
+			obj := payment.RequestObj{
+				Name:         name,
+				Path:         fmt.Sprintf("%v/v2/wallet/credit", config.Microservices.Payment),
+				Method:       "POST",
+				SuccessCode:  200,
+				DecodeMethod: JsonDecodeMethod,
+				RequestData:  data,
+				Logger:       er.Logger,
+			}
+			return obj.CreditWallet()
+		case "get_wallets_by_currencies":
+			obj := auth.RequestObj{
+				Name:         name,
+				Path:         fmt.Sprintf("%v/v2/get_wallets", config.Microservices.Auth),
+				Method:       "POST",
+				SuccessCode:  200,
+				DecodeMethod: JsonDecodeMethod,
+				RequestData:  data,
+				Logger:       er.Logger,
+			}
+			return obj.GetWalletBalancesByAccountIDAndCurrencies()
+		case "get_rate_by_from_and_to_currencies":
+			obj := transactions.RequestObj{
+				Name:         name,
+				Path:         fmt.Sprintf("%v/v2/get_rate_by_currency", config.Microservices.Transactions),
+				Method:       "GET",
+				SuccessCode:  200,
+				DecodeMethod: JsonDecodeMethod,
+				RequestData:  data,
+				Logger:       er.Logger,
+			}
+			return obj.GetRateByFromAndToCurrencies()
 		default:
 			return nil, fmt.Errorf("request not found")
 		}

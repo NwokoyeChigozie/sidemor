@@ -9,6 +9,7 @@ import (
 	"github.com/vesicash/mor-api/external/mocks/ipstack_mocks"
 	"github.com/vesicash/mor-api/external/mocks/monnify_mocks"
 	"github.com/vesicash/mor-api/external/mocks/notification_mocks"
+	"github.com/vesicash/mor-api/external/mocks/payment_mocks"
 	"github.com/vesicash/mor-api/external/mocks/rave_mocks"
 	"github.com/vesicash/mor-api/external/mocks/transactions_mocks"
 	"github.com/vesicash/mor-api/external/mocks/upload_mocks"
@@ -186,6 +187,12 @@ func (er ExternalRequest) SendExternalRequest(name string, data interface{}) (in
 		return verification_mocks.CheckVerification(er.Logger, data)
 	case "list_transactions":
 		return transactions_mocks.ListTransactions(er.Logger, data)
+	case "debit_wallet":
+		return payment_mocks.DebitWallet(er.Logger, data)
+	case "credit_wallet":
+		return payment_mocks.CreditWallet(er.Logger, data)
+	case "get_wallets_by_currencies":
+		return auth_mocks.GetWalletBalancesByAccountIDAndCurrencies(er.Logger, data)
 	default:
 		return nil, fmt.Errorf("request not found")
 	}

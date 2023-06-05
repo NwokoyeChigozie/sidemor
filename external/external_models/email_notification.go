@@ -9,3 +9,15 @@ type EmailNotificationRequest struct {
 type AccountIDRequestModel struct {
 	AccountId uint `json:"account_id"`
 }
+
+type TransactionIDRequestModel struct {
+	TransactionId string `json:"transaction_id"`
+}
+type TransactionIDAccountIDRequestModel struct {
+	TransactionId string `json:"transaction_id"`
+	AccountId     uint   `json:"account_id"`
+}
+type DueDateExtensionProposalRequestModel struct {
+	TransactionId string `json:"transaction_id"`
+	Note          string `json:"note"`
+}
