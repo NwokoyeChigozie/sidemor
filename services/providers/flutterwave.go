@@ -112,7 +112,7 @@ func getFlutterwavePaymentHistoryForChargeCompleted(req models.FlutterwaveWebhoo
 	}
 
 	if data.PaymentType != nil {
-		paymentHistory.PaymentMethod = *data.PaymentType
+		// paymentHistory.PaymentMethod = *data.PaymentType
 	}
 
 	if data.CreatedAt != nil {
@@ -125,7 +125,7 @@ func getFlutterwavePaymentHistoryForChargeCompleted(req models.FlutterwaveWebhoo
 
 	if data.Status != nil {
 		if *data.Status == "successful" {
-			paymentHistory.Status = paymentHistorySuccessful
+			// paymentHistory.Status = paymentHistorySuccessful
 		}
 	}
 

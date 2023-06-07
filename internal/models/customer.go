@@ -47,6 +47,18 @@ func (c *Customer) GetCustomerByAccountIDAndEmail(db *gorm.DB) (int, error) {
 	return http.StatusOK, nil
 }
 
+func (c *Customer) GetCustomerByID(db *gorm.DB) (int, error) {
+	err, nilErr := postgresql.SelectOneFromDb(db, &c, "id = ?", c.ID)
+	if nilErr != nil {
+		return http.StatusBadRequest, nilErr
+	}
+
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	return http.StatusOK, nil
+}
+
 func (c *Customer) GetCustomers(db *gorm.DB, paginator postgresql.Pagination, search string) ([]Customer, postgresql.PaginationResponse, error) {
 	var (
 		details    = []Customer{}
