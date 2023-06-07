@@ -60,7 +60,7 @@ type SettingsVerification struct {
 }
 
 type SaveSettingsRequest struct {
-	Countries           []int                         `json:"document_url"  validate:"required"`
+	Countries           []int                         `json:"countries"  validate:"required"`
 	WalletCurrencyCodes []string                      `json:"wallet_currency_codes"  validate:"required"`
 	BusinessTypeID      int64                         `json:"business_type_id"  validate:"required"`
 	UsageType           string                        `json:"usage_type"  validate:"required,oneof=second minute hour day week month year"`
