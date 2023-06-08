@@ -2,7 +2,9 @@ package mor
 
 import (
 	"fmt"
+	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vesicash/mor-api/internal/models"
@@ -146,6 +148,51 @@ func (base *Controller) AddRemoveOrGetWallets(c *gin.Context) {
 	}
 
 	rd := utility.BuildSuccessResponse(http.StatusOK, "successfully saved", settings)
+	c.JSON(http.StatusOK, rd)
+
+}
+
+func (base *Controller) GetVerificationSettings(c *gin.Context) {
+	var (
+		paginator = postgresql.GetPagination(c)
+		req       = models.GetSettingsRequest{
+			Search: c.Query("search"),
+			Status: c.Query("status"),
+		}
+	)
+
+	// search=transaction_id, filters:=wallet_type(currency), status, date range
+
+	if c.Query("from") != "" {
+		from, err := strconv.Atoi(c.Query("from"))
+		if err != nil {
+			msg := fmt.Sprintf("invalid from: %v, must be timestamp interger", err.Error())
+			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", msg, fmt.Errorf(msg), nil)
+			c.JSON(http.StatusBadRequest, rd)
+			return
+		}
+		req.FromTime = from
+	}
+
+	if c.Query("to") != "" {
+		to, err := strconv.Atoi(c.Query("to"))
+		if err != nil {
+			msg := fmt.Sprintf("invalid to: %v, must be timestamp interger", err.Error())
+			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", msg, fmt.Errorf(msg), nil)
+			c.JSON(http.StatusBadRequest, rd)
+			return
+		}
+		req.ToTime = to
+	}
+
+	settings, pagination, code, err := mor.GetVerificationSettingsService(base.ExtReq, base.Db, paginator, req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "successful", settings, pagination)
 	c.JSON(http.StatusOK, rd)
 
 }
