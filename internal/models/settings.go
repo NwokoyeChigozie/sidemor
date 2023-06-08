@@ -43,6 +43,10 @@ type Setting struct {
 	Verifications  []SettingsVerification `gorm:"column:verifications;serializer:json" json:"verifications"`
 	CurrencyCodes  []string               `gorm:"column:currency_codes;serializer:json" json:"currency_codes"`
 	PaymentMethods []PaymentMethod        `gorm:"column:payment_methods;serializer:json" json:"payment_methods"`
+	IsVerified     bool                   `gorm:"column:is_verified; default:false" json:"is_verified"`
+	AccountType    string                 `gorm:"-" json:"account_type"`
+	Email          string                 `gorm:"-" json:"email"`
+	FullName       string                 `gorm:"-" json:"full_name"`
 	CreatedAt      time.Time              `gorm:"column:created_at; autoCreateTime" json:"created_at"`
 	UpdatedAt      time.Time              `gorm:"column:updated_at; autoUpdateTime" json:"updated_at"`
 }
@@ -63,8 +67,7 @@ type SaveSettingsRequest struct {
 	Countries           []int                         `json:"countries"  validate:"required"`
 	WalletCurrencyCodes []string                      `json:"wallet_currency_codes"  validate:"required"`
 	BusinessTypeID      int64                         `json:"business_type_id"  validate:"required"`
-	UsageType           string                        `json:"usage_type"  validate:"required,oneof=second minute hour day week month year"`
-	IntervalBase        string                        `json:"interval_base" validate:"required,oneof=online offline"`
+	UsageType           string                        `json:"usage_type"  validate:"required,oneof=online offline"`
 	Documents           []SettingsVerificationRequest `json:"documents" validate:"required"`
 }
 type EnableOrDisablePaymentMethodsRequest struct {
@@ -78,6 +81,13 @@ type AddRemoveOrGetWalletsRequest struct {
 type SettingsVerificationRequest struct {
 	DocumentUrl string `json:"document_url"`
 	CountryID   uint   `json:"country_id"`
+}
+
+type GetSettingsRequest struct {
+	Search   string `json:"search"`
+	Status   string `json:"status"`
+	FromTime int    `json:"from_time"`
+	ToTime   int    `json:"to_time"`
 }
 
 func (s *Setting) CreateSetting(db *gorm.DB) error {
@@ -112,4 +122,38 @@ func (p PaymentMethod) In(methods []PaymentMethod) bool {
 		}
 	}
 	return false
+}
+
+func (s *Setting) GetSettings(db *gorm.DB, paginator postgresql.Pagination, search string, from int, to int, isVerified *bool) ([]Setting, postgresql.PaginationResponse, error) {
+	details := []Setting{}
+	query := ""
+
+	if isVerified != nil {
+		query = addQuery(query, fmt.Sprintf("is_verified = %v", *isVerified), "and")
+	}
+
+	//if search != "" {
+	//	query = addQuery(query, fmt.Sprintf("reference = '%v'", search), "and")
+	//}
+
+	//if t.Status != "" {
+	//	query = addQuery(query, fmt.Sprintf("status = '%v'", t.Status), "and")
+	//}
+
+	if from != 0 {
+		fromTime := time.Unix(int64(from), 0)
+		query = addQuery(query, fmt.Sprintf("created_at >= '%v'", fromTime), "and")
+	}
+
+	if to != 0 {
+		toTime := time.Unix(int64(to), 0)
+		query = addQuery(query, fmt.Sprintf("created_at >= '%v'", toTime), "and")
+	}
+
+	pagination, err := postgresql.SelectAllFromDbOrderByPaginated(db, "id", "desc", paginator, &details, query)
+	if err != nil {
+		return details, pagination, err
+	}
+
+	return details, pagination, nil
 }

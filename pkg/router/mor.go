@@ -34,11 +34,13 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 		paymentApiUrl.POST("/wallets/:action", mor.AddRemoveOrGetWallets)
 	}
 
-	paymentBusinessAdminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db, extReq, middleware.BusinessAdmin))
+	paymentBusinessAdminUrl := r.Group(fmt.Sprintf("%v/admin", ApiVersion), middleware.Authorize(db, extReq, middleware.BusinessAdmin))
 	{
 		paymentBusinessAdminUrl.POST("/transaction/record", mor.RecordTransaction)
 		paymentBusinessAdminUrl.GET("/transaction/get/:id", mor.GetTransaction)
 		paymentBusinessAdminUrl.GET("/transactions/get", mor.GetTransactions)
+		paymentBusinessAdminUrl.GET("/settings/get", mor.GetVerificationSettings)
+
 	}
 
 	morjobsUrl := r.Group(fmt.Sprintf("%v/jobs", ApiVersion))

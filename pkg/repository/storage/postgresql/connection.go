@@ -75,23 +75,23 @@ func connectToDb(host, user, password, dbname, port, sslmode, timezone string, l
 func ReturnDatabase(name string) *gorm.DB {
 	databases := DB
 	switch name {
-	case "admin":
+	case "admin_service":
 		return DB.Admin
-	case "auth":
+	case "auth_service":
 		return DB.Auth
-	case "notifications":
+	case "notification_service":
 		return DB.Notifications
-	case "payment":
+	case "payment_service":
 		return DB.Payment
-	case "reminder":
+	case "reminders_service":
 		return DB.Reminder
-	case "subscription":
+	case "subscription_service":
 		return DB.Subscription
-	case "transaction":
+	case "transaction_service":
 		return DB.Transaction
-	case "verification":
+	case "verification_service":
 		return DB.Verification
-	case "cron":
+	case "cron_service":
 		return DB.Cron
 	case "mor":
 		return DB.MOR
