@@ -71,7 +71,7 @@ func (base *Controller) GetTransaction(c *gin.Context) {
 		return
 	}
 
-	rd := utility.BuildSuccessResponse(http.StatusOK, "successfully created", transaction)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "successful", transaction)
 	c.JSON(http.StatusOK, rd)
 
 }
@@ -118,6 +118,43 @@ func (base *Controller) GetTransactions(c *gin.Context) {
 	}
 
 	rd := utility.BuildSuccessResponse(http.StatusOK, "successful", transactions, pagination)
+	c.JSON(http.StatusOK, rd)
+
+}
+
+func (base *Controller) GetMerchantTransactionsSummary(c *gin.Context) {
+	var (
+		id = c.Param("account_id")
+	)
+
+	accountID, err := strconv.Atoi(id)
+	if err != nil {
+		msg := fmt.Sprintf("invalid account_id: %v", err.Error())
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", msg, fmt.Errorf(msg), nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+	summary, code, err := mor.GetMerchantTransactionsSummaryService(base.ExtReq, base.Db, accountID)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "successful", summary)
+	c.JSON(http.StatusOK, rd)
+
+}
+
+func (base *Controller) GetTransactionsSummary(c *gin.Context) {
+	summary, code, err := mor.GetTransactionsSummaryService(base.ExtReq, base.Db)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "successful", summary)
 	c.JSON(http.StatusOK, rd)
 
 }
