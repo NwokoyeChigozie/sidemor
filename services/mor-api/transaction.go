@@ -154,5 +154,5 @@ func GetMorTransactionsDetails(extReq request.ExternalRequest, db postgresql.Dat
 		extReq.Logger.Error(fmt.Sprintf("error getting mor transaction details: %v", strings.Join(errs, ", ")))
 	}
 
-	return transactions, nil
+	return newTransactions, nil
 }

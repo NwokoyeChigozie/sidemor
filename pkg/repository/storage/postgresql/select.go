@@ -107,6 +107,40 @@ func SelectAllFromByGroup(db *gorm.DB, orderBy, order string, pagination *Pagina
 	}, tx.Error
 }
 
+func RawSelectAllFromByGroup(db *gorm.DB, orderBy, order string, pagination *Pagination, model interface{}, receiver interface{}, groupColumn string, selectQuery string, query string, args ...interface{}) (PaginationResponse, error) {
+
+	if order == "" {
+		order = "desc"
+	}
+	if orderBy == "" {
+		orderBy = "id"
+	}
+
+	if pagination == nil {
+		tx := db.Model(model).Order(orderBy+" "+order).Select(selectQuery).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
+		return PaginationResponse{}, tx.Error
+	}
+
+	var count int64
+	err := db.Model(model).Where(query, args...).Group(groupColumn + ", id").Count(&count).Error
+	if err != nil {
+		return PaginationResponse{
+			CurrentPage:     pagination.Page,
+			PageCount:       pagination.Limit,
+			TotalPagesCount: 0,
+		}, err
+	}
+
+	totalPages := int(math.Ceil(float64(count) / float64(pagination.Limit)))
+
+	tx := db.Model(model).Limit(pagination.Limit).Offset((pagination.Page-1)*pagination.Limit).Order(orderBy+" "+order).Select(selectQuery).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
+	return PaginationResponse{
+		CurrentPage:     pagination.Page,
+		PageCount:       int(tx.RowsAffected),
+		TotalPagesCount: totalPages,
+	}, tx.Error
+}
+
 func SelectAllFromDbOrderByPaginated(db *gorm.DB, orderBy, order string, pagination Pagination, receiver interface{}, query interface{}, args ...interface{}) (PaginationResponse, error) {
 
 	if order == "" {

@@ -27,7 +27,7 @@ type Transaction struct {
 	MerchantName    string            `gorm:"-" json:"merchant_name"`
 	MerchantEmail   string            `gorm:"-" json:"merchant_email"`
 	Country         string            `gorm:"-" json:"country"`
-	Currency        string            `gorm:"-" json:"Currency"`
+	Currency        string            `gorm:"-" json:"currency"`
 	Description     string            `gorm:"column:description; type:varchar(255)" json:"description"`
 	Amount          float64           `gorm:"column:amount; type:decimal(20,2)" json:"amount"`
 	TaxFee          float64           `gorm:"column:tax_fee; type:decimal(20,2)" json:"tax_fee"`
@@ -40,6 +40,12 @@ type Transaction struct {
 	TransactionDate time.Time         `gorm:"column:transaction_date" json:"transaction_date"`
 	CreatedAt       time.Time         `gorm:"column:created_at; autoCreateTime" json:"created_at"`
 	UpdatedAt       time.Time         `gorm:"column:updated_at; autoUpdateTime" json:"updated_at"`
+}
+
+type TransactionSummary struct {
+	Currency  string  `gorm:"-" json:"currency"`
+	CountryID int64   `gorm:"column:country_id; type:int" json:"-"`
+	Amount    float64 `gorm:"column:amount; type:decimal(20,2)" json:"amount"`
 }
 
 type RecordTransactionRequest struct {
@@ -73,12 +79,41 @@ func (t *Transaction) GetTransactionByID(db *gorm.DB) (int, error) {
 	return http.StatusOK, nil
 }
 
+func (t *Transaction) GetTransactionsSummary(db *gorm.DB, paidOut *bool) ([]TransactionSummary, error) {
+	summary := []TransactionSummary{}
+	extraQuery := ""
+	whereQuery := ""
+	if t.MerchantID != 0 {
+		extraQuery += fmt.Sprintf(" and merchant_id = %v", t.MerchantID)
+		whereQuery = addQuery(whereQuery, fmt.Sprintf(" and merchant_id = %v", t.MerchantID), "and")
+	}
+
+	if paidOut != nil {
+		extraQuery += fmt.Sprintf(" and is_paid_out = %v", *paidOut)
+		whereQuery = addQuery(whereQuery, fmt.Sprintf(" and is_paid_out = %v", *paidOut), "and")
+	}
+
+	// subQuery := db.Model(&t).Select("SUM(amount)").Where("is_paid_out = ? and currency=transactions.currency", false)
+	selectQuery := fmt.Sprintf("country_id, (SUM(amount) from transactions where currency=transactions.currency " + extraQuery + ") as amount")
+
+	_, err := postgresql.RawSelectAllFromByGroup(db, "country_id", "desc", nil, &t, &summary, "country_id", selectQuery, whereQuery)
+	if err != nil {
+		return summary, err
+	}
+
+	return summary, nil
+}
+
 func (t *Transaction) GetTransactions(db *gorm.DB, paginator postgresql.Pagination, search string, from int, to int, paidOut *bool) ([]Transaction, postgresql.PaginationResponse, error) {
 	details := []Transaction{}
 	query := ""
 
 	if paidOut != nil {
 		query = addQuery(query, fmt.Sprintf("is_paid_out = %v", *paidOut), "and")
+	}
+
+	if t.MerchantID != 0 {
+		query = addQuery(query, fmt.Sprintf("merchant_id = %v", t.MerchantID), "and")
 	}
 
 	if search != "" {
@@ -109,6 +144,38 @@ func (t *Transaction) GetTransactions(db *gorm.DB, paginator postgresql.Paginati
 	}
 
 	return details, pagination, nil
+}
+
+func (t *Transaction) GetTransactionsAll(db *gorm.DB, paidOut *bool) ([]Transaction, error) {
+	details := []Transaction{}
+	query := ""
+
+	if paidOut != nil {
+		query = addQuery(query, fmt.Sprintf("is_paid_out = %v", *paidOut), "and")
+	}
+
+	if t.MerchantID != 0 {
+		query = addQuery(query, fmt.Sprintf("merchant_id = %v", t.MerchantID), "and")
+	}
+
+	if t.Reference != "" {
+		query = addQuery(query, fmt.Sprintf("reference = '%v'", t.Reference), "and")
+	}
+
+	if t.CountryID != 0 {
+		query = addQuery(query, fmt.Sprintf("country_id = %v", t.CountryID), "and")
+	}
+
+	if t.Status != "" {
+		query = addQuery(query, fmt.Sprintf("status = '%v'", t.Status), "and")
+	}
+
+	err := postgresql.SelectAllFromDb(db, "desc", &details, query)
+	if err != nil {
+		return details, err
+	}
+
+	return details, nil
 }
 
 func (t *Transaction) CreateTransaction(db *gorm.DB) error {
