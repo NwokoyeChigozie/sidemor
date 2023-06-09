@@ -92,6 +92,26 @@ func SaveSettingsService(extReq request.ExternalRequest, db postgresql.Databases
 	return setting, http.StatusOK, nil
 }
 
+func UpdateDocumentStatusService(db postgresql.Databases, settingsID int, req models.UpdateDocumentStatusRequest) (models.Setting, int, error) {
+	var (
+		setting = models.Setting{}
+	)
+
+	if code, err := setting.GetSettingByID(db.MOR, settingsID); err != nil {
+		if code == http.StatusInternalServerError {
+			return models.Setting{}, code, err
+		}
+	}
+
+	err := setting.UpdateVerificationSettings(db.MOR, settingsID, req)
+
+	if err != nil {
+		return setting, http.StatusInternalServerError, err
+	}
+
+	return setting, http.StatusOK, nil
+}
+
 func GetSettingsService(extReq request.ExternalRequest, db postgresql.Databases, user external_models.User) (*models.Setting, int, error) {
 	var (
 		setting = models.Setting{AccountID: int64(user.AccountID)}

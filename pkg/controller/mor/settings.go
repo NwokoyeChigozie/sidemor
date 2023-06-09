@@ -196,3 +196,46 @@ func (base *Controller) GetVerificationSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 
 }
+
+func (base *Controller) UpdateDocumentStatus(c *gin.Context) {
+	var (
+		req        models.UpdateDocumentStatusRequest
+		settingsID = c.Param("id")
+	)
+
+	err := c.ShouldBind(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err = base.Validator.Struct(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	id, err := strconv.Atoi(settingsID)
+	if err != nil {
+		return
+	}
+
+	_, code, err := mor.UpdateDocumentStatusService(base.Db, id, req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	if code != http.StatusOK {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Document status updated", nil)
+	c.JSON(http.StatusOK, rd)
+
+}

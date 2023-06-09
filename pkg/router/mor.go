@@ -40,6 +40,7 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 		paymentBusinessAdminUrl.GET("/transaction/get/:id", mor.GetTransaction)
 		paymentBusinessAdminUrl.GET("/transactions/get", mor.GetTransactions)
 		paymentBusinessAdminUrl.GET("/settings/get", mor.GetVerificationSettings)
+		paymentBusinessAdminUrl.POST("/settings/:id/document", mor.UpdateDocumentStatus)
 
 	}
 

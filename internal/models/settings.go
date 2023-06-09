@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -90,6 +91,11 @@ type GetSettingsRequest struct {
 	ToTime   int    `json:"to_time"`
 }
 
+type UpdateDocumentStatusRequest struct {
+	CountryId int    `json:"country_id"`
+	Status    string `json:"status"`
+}
+
 func (s *Setting) CreateSetting(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &s)
 	if err != nil {
@@ -100,6 +106,18 @@ func (s *Setting) CreateSetting(db *gorm.DB) error {
 
 func (s *Setting) GetSettingByAccountID(db *gorm.DB) (int, error) {
 	err, nilErr := postgresql.SelectOneFromDb(db, &s, "account_id = ?", s.AccountID)
+	if nilErr != nil {
+		return http.StatusBadRequest, nilErr
+	}
+
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	return http.StatusOK, nil
+}
+
+func (s *Setting) GetSettingByID(db *gorm.DB, settingsID int) (int, error) {
+	err, nilErr := postgresql.SelectOneFromDb(db, &s, "id = ?", settingsID)
 	if nilErr != nil {
 		return http.StatusBadRequest, nilErr
 	}
@@ -156,4 +174,32 @@ func (s *Setting) GetSettings(db *gorm.DB, paginator postgresql.Pagination, sear
 	}
 
 	return details, pagination, nil
+}
+
+func (s *Setting) UpdateVerificationSettings(db *gorm.DB, id int, request UpdateDocumentStatusRequest) error {
+	var verification Setting
+	var err error
+	if err := db.First(&verification, id).Error; err != nil {
+		return err
+	}
+
+	found := false
+	for i, v := range verification.Verifications {
+		if v.CountryID == uint(request.CountryId) {
+			verification.Verifications[i].Status = VerificationStatus(request.Status)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		errMsg := "Country ID not found"
+		return errors.New(errMsg)
+	}
+
+	err = db.Save(&verification).Error
+	if err != nil {
+		return err
+	}
+	return err
 }
