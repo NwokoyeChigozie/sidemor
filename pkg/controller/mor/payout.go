@@ -79,3 +79,42 @@ func (base *Controller) GetPayouts(c *gin.Context) {
 	rd := utility.BuildSuccessResponse(http.StatusOK, "successful", payouts, pagination)
 	c.JSON(http.StatusOK, rd)
 }
+
+func (base *Controller) PayOutToWallets(c *gin.Context) {
+	var (
+		req models.PayoutToWalletRequest
+	)
+
+	err := c.ShouldBind(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err = base.Validator.Struct(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	user := models.MyIdentity
+	if user == nil {
+		msg := "error retrieving authenticated user"
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", msg, fmt.Errorf(msg), nil)
+		c.JSON(http.StatusInternalServerError, rd)
+		return
+	}
+
+	msg, code, err := mor.PayOutToWalletsService(base.ExtReq, base.Db, req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, msg, nil)
+	c.JSON(http.StatusOK, rd)
+
+}

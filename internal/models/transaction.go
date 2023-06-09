@@ -146,6 +146,38 @@ func (t *Transaction) GetTransactions(db *gorm.DB, paginator postgresql.Paginati
 	return details, pagination, nil
 }
 
+func (t *Transaction) GetTransactionsAll(db *gorm.DB, paidOut *bool) ([]Transaction, error) {
+	details := []Transaction{}
+	query := ""
+
+	if paidOut != nil {
+		query = addQuery(query, fmt.Sprintf("is_paid_out = %v", *paidOut), "and")
+	}
+
+	if t.MerchantID != 0 {
+		query = addQuery(query, fmt.Sprintf("merchant_id = %v", t.MerchantID), "and")
+	}
+
+	if t.Reference != "" {
+		query = addQuery(query, fmt.Sprintf("reference = '%v'", t.Reference), "and")
+	}
+
+	if t.CountryID != 0 {
+		query = addQuery(query, fmt.Sprintf("country_id = %v", t.CountryID), "and")
+	}
+
+	if t.Status != "" {
+		query = addQuery(query, fmt.Sprintf("status = '%v'", t.Status), "and")
+	}
+
+	err := postgresql.SelectAllFromDb(db, "desc", &details, query)
+	if err != nil {
+		return details, err
+	}
+
+	return details, nil
+}
+
 func (t *Transaction) CreateTransaction(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &t)
 	if err != nil {

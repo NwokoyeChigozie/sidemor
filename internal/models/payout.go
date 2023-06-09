@@ -31,6 +31,11 @@ type GetPayoutRequest struct {
 	ToTime         int    `json:"to_time"`
 }
 
+type PayoutToWalletRequest struct {
+	Merchants []int `json:"merchants"`
+	All       bool  `json:"all"`
+}
+
 func (p *Payout) GetPayoutByID(db *gorm.DB) (int, error) {
 	err, nilErr := postgresql.SelectOneFromDb(db, &p, "id = ?", p.ID)
 	if nilErr != nil {

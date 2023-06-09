@@ -46,6 +46,7 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 
 		paymentBusinessAdminUrl.GET("/payout/get/:id", mor.GetPayout)
 		paymentBusinessAdminUrl.GET("/payouts/get", mor.GetPayouts)
+		paymentBusinessAdminUrl.POST("/payout/to-wallet", mor.PayOutToWallets)
 	}
 
 	morjobsUrl := r.Group(fmt.Sprintf("%v/jobs", ApiVersion))
