@@ -579,18 +579,18 @@ func CreditWallet(extReq request.ExternalRequest, db postgresql.Databases, amoun
 	return walletBalance, nil
 }
 
-func GetWalletBalancesByCurrencies(extReq request.ExternalRequest, db postgresql.Databases, accountID int, currencies []string) ([]external_models.WalletBalance, error) {
+func GetWalletBalancesByCurrencies(extReq request.ExternalRequest, db postgresql.Databases, accountID int, currencies []string) (map[string]external_models.WalletBalance, error) {
 	walletItf, err := extReq.SendExternalRequest(request.GetWalletsByCurrencies, external_models.GetWalletsRequest{
 		AccountID:  accountID,
 		Currencies: currencies,
 	})
 	if err != nil {
-		return []external_models.WalletBalance{}, err
+		return map[string]external_models.WalletBalance{}, err
 	}
 
-	walletBalances, ok := walletItf.([]external_models.WalletBalance)
+	walletBalances, ok := walletItf.(map[string]external_models.WalletBalance)
 	if !ok {
-		return []external_models.WalletBalance{}, fmt.Errorf("response data format error")
+		return map[string]external_models.WalletBalance{}, fmt.Errorf("response data format error")
 	}
 
 	return walletBalances, nil

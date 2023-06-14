@@ -152,7 +152,7 @@ func EnableOrDisablePaymentMethodsService(extReq request.ExternalRequest, db pos
 	return setting, http.StatusOK, nil
 }
 
-func AddRemoveOrGetWalletsService(extReq request.ExternalRequest, db postgresql.Databases, user external_models.User, action string, req models.AddRemoveOrGetWalletsRequest) ([]external_models.WalletBalance, int, error) {
+func AddRemoveOrGetWalletsService(extReq request.ExternalRequest, db postgresql.Databases, user external_models.User, action string, req models.AddRemoveOrGetWalletsRequest) (map[string]external_models.WalletBalance, int, error) {
 	var (
 		setting = models.Setting{AccountID: int64(user.AccountID)}
 	)
@@ -160,15 +160,16 @@ func AddRemoveOrGetWalletsService(extReq request.ExternalRequest, db postgresql.
 	code, err := setting.GetSettingByAccountID(db.MOR)
 	if err != nil {
 		if code == http.StatusInternalServerError {
-			return []external_models.WalletBalance{}, code, err
+			return map[string]external_models.WalletBalance{}, code, err
 		}
 
 		err := setting.CreateSetting(db.MOR)
 		if err != nil {
-			return []external_models.WalletBalance{}, http.StatusInternalServerError, err
+			return map[string]external_models.WalletBalance{}, http.StatusInternalServerError, err
 		}
 	}
 
+	fmt.Println(action)
 	currencies := setting.CurrencyCodes
 	if strings.EqualFold(action, "add") {
 		currencies, err = handleAddCurrencies(extReq, db, int(user.AccountID), currencies, req.CurrencyCodes)
@@ -176,7 +177,11 @@ func AddRemoveOrGetWalletsService(extReq request.ExternalRequest, db postgresql.
 		currencies, err = handleRemoveCurrencies(extReq, db, int(user.AccountID), currencies, req.CurrencyCodes)
 	} else if strings.EqualFold(action, "get") {
 		if len(req.CurrencyCodes) > 0 {
-			wallets, err := services.GetWalletBalancesByCurrencies(extReq, db, int(user.AccountID), req.CurrencyCodes)
+			morCurrencies := []string{}
+			for _, c := range req.CurrencyCodes {
+				morCurrencies = append(morCurrencies, fmt.Sprintf("MOR_%s", strings.ToUpper(c)))
+			}
+			wallets, err := services.GetWalletBalancesByCurrencies(extReq, db, int(user.AccountID), morCurrencies)
 			if err != nil {
 				return wallets, http.StatusInternalServerError, err
 			}
@@ -185,16 +190,20 @@ func AddRemoveOrGetWalletsService(extReq request.ExternalRequest, db postgresql.
 	}
 
 	if err != nil {
-		return []external_models.WalletBalance{}, http.StatusInternalServerError, err
+		return map[string]external_models.WalletBalance{}, http.StatusInternalServerError, err
 	}
 
 	setting.CurrencyCodes = currencies
 	err = setting.UpdateAllFields(db.MOR)
 	if err != nil {
-		return []external_models.WalletBalance{}, http.StatusInternalServerError, err
+		return map[string]external_models.WalletBalance{}, http.StatusInternalServerError, err
 	}
 
-	wallets, err := services.GetWalletBalancesByCurrencies(extReq, db, int(user.AccountID), currencies)
+	morCurrencies := []string{}
+	for _, c := range currencies {
+		morCurrencies = append(morCurrencies, fmt.Sprintf("MOR_%s", strings.ToUpper(c)))
+	}
+	wallets, err := services.GetWalletBalancesByCurrencies(extReq, db, int(user.AccountID), morCurrencies)
 	if err != nil {
 		return wallets, http.StatusInternalServerError, err
 	}
@@ -203,24 +212,34 @@ func AddRemoveOrGetWalletsService(extReq request.ExternalRequest, db postgresql.
 }
 
 func handleAddCurrencies(extReq request.ExternalRequest, db postgresql.Databases, accountID int, availableCurrencies []string, newCurrencies []string) ([]string, error) {
-
+	fmt.Println("started adding", newCurrencies)
 	for _, c := range newCurrencies {
 		c = strings.ToUpper(c)
+		fmt.Println("started adding", c)
 		morCurrency := fmt.Sprintf("MOR_%v", c)
+		fmt.Println("mor currency", morCurrency)
 		if !utility.InStringSlice(c, availableCurrencies) {
+			fmt.Println("not in currency", availableCurrencies)
 			_, err := services.CreateWalletBalance(extReq, accountID, morCurrency, 0)
 			if err != nil {
 				return availableCurrencies, err
 			}
 
 			availableCurrencies = append(availableCurrencies, c)
+		} else {
+			_, err := services.GetWalletBalanceByAccountIdAndCurrency(extReq, accountID, morCurrency)
+			if err != nil {
+				_, err := services.CreateWalletBalance(extReq, accountID, morCurrency, 0)
+				if err != nil {
+					return availableCurrencies, err
+				}
+			}
 		}
 	}
 	return availableCurrencies, nil
 }
 
 func handleRemoveCurrencies(extReq request.ExternalRequest, db postgresql.Databases, accountID int, availableCurrencies []string, removeCurrencies []string) ([]string, error) {
-
 	for _, c := range removeCurrencies {
 		c = strings.ToUpper(c)
 		creditWallet := "MOR_USD"
@@ -230,16 +249,21 @@ func handleRemoveCurrencies(extReq request.ExternalRequest, db postgresql.Databa
 				continue
 			}
 
+			walletBalance, _ := services.GetWalletBalanceByAccountIdAndCurrency(extReq, accountID, morCurrency)
+			initialBalance := walletBalance.Available
+
+			if initialBalance == 0 {
+				availableCurrencies = utility.RemoveString(availableCurrencies, c)
+				continue
+			}
+
 			rate, err := services.GetRateByCurrencies(extReq, c, "USD")
 			if err != nil {
 				extReq.Logger.Error(fmt.Sprintf("error getting rate for currencies %v -> %v: %v", c, "USD", err.Error()))
 				continue
 			}
 
-			walletBalance, _ := services.GetWalletBalanceByAccountIdAndCurrency(extReq, accountID, morCurrency)
-			initialBalance := walletBalance.Available
-
-			if initialBalance <= 0 || rate.ID <= 0 {
+			if rate.ID <= 0 {
 				continue
 			}
 

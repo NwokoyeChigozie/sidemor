@@ -17,7 +17,7 @@ func GetMerchantTransactionsSummaryService(extReq request.ExternalRequest, db po
 		transaction = models.Transaction{
 			MerchantID: int64(accountID),
 		}
-		isPaidOut = true
+		isPaidOut = false
 	)
 
 	summaries, err := transaction.GetTransactionsSummary(db.MOR, &isPaidOut)
@@ -36,7 +36,7 @@ func GetMerchantTransactionsSummaryService(extReq request.ExternalRequest, db po
 func GetTransactionsSummaryService(extReq request.ExternalRequest, db postgresql.Databases) ([]models.TransactionSummary, int, error) {
 	var (
 		transaction = models.Transaction{}
-		isPaidOut   = true
+		isPaidOut   = false
 	)
 
 	summaries, err := transaction.GetTransactionsSummary(db.MOR, &isPaidOut)

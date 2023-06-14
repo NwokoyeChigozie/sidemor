@@ -99,14 +99,6 @@ func (base *Controller) PayOutToWallets(c *gin.Context) {
 		return
 	}
 
-	user := models.MyIdentity
-	if user == nil {
-		msg := "error retrieving authenticated user"
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", msg, fmt.Errorf(msg), nil)
-		c.JSON(http.StatusInternalServerError, rd)
-		return
-	}
-
 	msg, code, err := mor.PayOutToWalletsService(base.ExtReq, base.Db, req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)

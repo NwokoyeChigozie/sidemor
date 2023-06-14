@@ -2,9 +2,10 @@ package mor
 
 import (
 	"fmt"
-	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
 	"net/http"
 	"strconv"
+
+	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vesicash/mor-api/internal/models"
@@ -68,7 +69,7 @@ func (base *Controller) GetSettings(c *gin.Context) {
 		return
 	}
 
-	rd := utility.BuildSuccessResponse(http.StatusOK, "successfully saved", settings)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "successful", settings)
 	c.JSON(http.StatusOK, rd)
 
 }
@@ -147,7 +148,7 @@ func (base *Controller) AddRemoveOrGetWallets(c *gin.Context) {
 		return
 	}
 
-	rd := utility.BuildSuccessResponse(http.StatusOK, "successfully saved", settings)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "successful", settings)
 	c.JSON(http.StatusOK, rd)
 
 }
