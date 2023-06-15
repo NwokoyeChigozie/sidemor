@@ -84,17 +84,17 @@ func (t *Transaction) GetTransactionsSummary(db *gorm.DB, paidOut *bool) ([]Tran
 	extraQuery := ""
 	whereQuery := ""
 	if t.MerchantID != 0 {
-		extraQuery += fmt.Sprintf(" and merchant_id = %v", t.MerchantID)
-		whereQuery = addQuery(whereQuery, fmt.Sprintf(" and merchant_id = %v", t.MerchantID), "and")
+		extraQuery += fmt.Sprintf(" and trx.merchant_id = %v", t.MerchantID)
+		whereQuery = addQuery(whereQuery, fmt.Sprintf("merchant_id = %v", t.MerchantID), "and")
 	}
 
 	if paidOut != nil {
-		extraQuery += fmt.Sprintf(" and is_paid_out = %v", *paidOut)
-		whereQuery = addQuery(whereQuery, fmt.Sprintf(" and is_paid_out = %v", *paidOut), "and")
+		extraQuery += fmt.Sprintf(" and trx.is_paid_out = %v", *paidOut)
+		whereQuery = addQuery(whereQuery, fmt.Sprintf("is_paid_out = %v", *paidOut), "and")
 	}
 
 	// subQuery := db.Model(&t).Select("SUM(amount)").Where("is_paid_out = ? and currency=transactions.currency", false)
-	selectQuery := fmt.Sprintf("country_id, (SUM(amount) from transactions where currency=transactions.currency " + extraQuery + ") as amount")
+	selectQuery := fmt.Sprintf("distinct country_id, (SELECT SUM(trx.amount) from transactions trx where trx.country_id=transactions.country_id " + extraQuery + ") as amount")
 
 	_, err := postgresql.RawSelectAllFromByGroup(db, "country_id", "desc", nil, &t, &summary, "country_id", selectQuery, whereQuery)
 	if err != nil {

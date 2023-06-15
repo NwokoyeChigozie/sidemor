@@ -131,8 +131,8 @@ type GetWalletsRequest struct {
 }
 
 type WalletBalancesResponse struct {
-	Status  string          `json:"status"`
-	Code    int             `json:"code"`
-	Message string          `json:"message"`
-	Data    []WalletBalance `json:"data"`
+	Status  string                   `json:"status"`
+	Code    int                      `json:"code"`
+	Message string                   `json:"message"`
+	Data    map[string]WalletBalance `json:"data"`
 }

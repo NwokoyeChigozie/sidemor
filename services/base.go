@@ -73,6 +73,23 @@ func GetUserWithEmail(extReq request.ExternalRequest, email string) (external_mo
 	return us, nil
 }
 
+func GetUsers(extReq request.ExternalRequest, isMorEnabled bool, search string) ([]external_models.User, error) {
+	usItf, err := extReq.SendExternalRequest(request.GetUsers, external_models.GetUsersRequest{
+		Search:       search,
+		IsMorEnabled: isMorEnabled,
+	})
+	if err != nil {
+		return []external_models.User{}, err
+	}
+
+	us, ok := usItf.([]external_models.User)
+	if !ok {
+		return []external_models.User{}, fmt.Errorf("response data format error")
+	}
+
+	return us, nil
+}
+
 func GetUsersByBusinessID(extReq request.ExternalRequest, BusinessId int) ([]external_models.User, error) {
 	usItf, err := extReq.SendExternalRequest(request.GetUsersByBusinessID, strconv.Itoa(BusinessId))
 	if err != nil {
@@ -579,18 +596,18 @@ func CreditWallet(extReq request.ExternalRequest, db postgresql.Databases, amoun
 	return walletBalance, nil
 }
 
-func GetWalletBalancesByCurrencies(extReq request.ExternalRequest, db postgresql.Databases, accountID int, currencies []string) ([]external_models.WalletBalance, error) {
+func GetWalletBalancesByCurrencies(extReq request.ExternalRequest, db postgresql.Databases, accountID int, currencies []string) (map[string]external_models.WalletBalance, error) {
 	walletItf, err := extReq.SendExternalRequest(request.GetWalletsByCurrencies, external_models.GetWalletsRequest{
 		AccountID:  accountID,
 		Currencies: currencies,
 	})
 	if err != nil {
-		return []external_models.WalletBalance{}, err
+		return map[string]external_models.WalletBalance{}, err
 	}
 
-	walletBalances, ok := walletItf.([]external_models.WalletBalance)
+	walletBalances, ok := walletItf.(map[string]external_models.WalletBalance)
 	if !ok {
-		return []external_models.WalletBalance{}, fmt.Errorf("response data format error")
+		return map[string]external_models.WalletBalance{}, fmt.Errorf("response data format error")
 	}
 
 	return walletBalances, nil

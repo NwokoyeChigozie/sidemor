@@ -39,7 +39,7 @@ func PayoutToUsers(extReq request.ExternalRequest, db postgresql.Databases, acco
 func PayoutToUser(extReq request.ExternalRequest, db postgresql.Databases, accountID int) (int, error) {
 	var (
 		IsPaidOut                 = false
-		currenciesTransactionsMap map[int][]models.Transaction
+		currenciesTransactionsMap = map[int][]models.Transaction{}
 	)
 
 	_, err := services.GetUserWithAccountID(extReq, accountID)

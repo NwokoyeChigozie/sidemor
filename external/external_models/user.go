@@ -59,3 +59,14 @@ type SetUserAuthorizationRequiredStatusResponse struct {
 	Message string `json:"message"`
 	Data    bool   `json:"data"`
 }
+
+type GetUsersRequest struct {
+	Search       string
+	IsMorEnabled bool
+}
+type GetUsersResponse struct {
+	Status  string `json:"status"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    []User `json:"data"`
+}

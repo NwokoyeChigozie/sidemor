@@ -120,11 +120,11 @@ func CreateWalletTransaction(logger *utility.Logger, idata interface{}) (externa
 	}, nil
 }
 
-func GetWalletBalancesByAccountIDAndCurrencies(logger *utility.Logger, idata interface{}) ([]external_models.WalletBalance, error) {
+func GetWalletBalancesByAccountIDAndCurrencies(logger *utility.Logger, idata interface{}) (map[string]external_models.WalletBalance, error) {
 
 	var (
 		outBoundResponse external_models.WalletBalancesResponse
-		wallets          = []external_models.WalletBalance{}
+		wallets          = map[string]external_models.WalletBalance{}
 	)
 
 	data, ok := idata.(external_models.GetWalletsRequest)
@@ -135,11 +135,11 @@ func GetWalletBalancesByAccountIDAndCurrencies(logger *utility.Logger, idata int
 
 	logger.Info("get wallets", outBoundResponse)
 	for _, c := range data.Currencies {
-		wallets = append(wallets, external_models.WalletBalance{
+		wallets[c] = external_models.WalletBalance{
 			AccountID: data.AccountID,
 			Currency:  c,
 			Available: 20000,
-		})
+		}
 	}
 
 	return wallets, nil

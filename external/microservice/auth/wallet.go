@@ -163,7 +163,7 @@ func (r *RequestObj) CreateWalletTransaction() (external_models.WalletTransactio
 	return outBoundResponse.Data, nil
 }
 
-func (r *RequestObj) GetWalletBalancesByAccountIDAndCurrencies() ([]external_models.WalletBalance, error) {
+func (r *RequestObj) GetWalletBalancesByAccountIDAndCurrencies() (map[string]external_models.WalletBalance, error) {
 
 	var (
 		appKey           = config.GetConfig().App.Key

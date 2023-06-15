@@ -2,13 +2,14 @@ package mor
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+	"sync"
+
 	"github.com/vesicash/mor-api/external/request"
 	"github.com/vesicash/mor-api/internal/models"
 	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
 	"github.com/vesicash/mor-api/services"
-	"net/http"
-	"strings"
-	"sync"
 )
 
 func GetVerificationSettingsService(extReq request.ExternalRequest, db postgresql.Databases, paginator postgresql.Pagination, req models.GetSettingsRequest) ([]models.Setting, postgresql.PaginationResponse, int, error) {
@@ -24,7 +25,15 @@ func GetVerificationSettingsService(extReq request.ExternalRequest, db postgresq
 		isVerified = &falseD
 	}
 
-	settings, pagination, err := setting.GetSettings(db.MOR, paginator, req.Search, req.FromTime, req.ToTime, isVerified)
+	usersIDs := []int{}
+	if req.Search != "" {
+		users, _ := services.GetUsers(extReq, true, req.Search)
+		for _, u := range users {
+			usersIDs = append(usersIDs, int(u.AccountID))
+		}
+	}
+
+	settings, pagination, err := setting.GetSettings(db.MOR, paginator, usersIDs, req.FromTime, req.ToTime, isVerified)
 	if err != nil {
 		return settings, pagination, http.StatusInternalServerError, err
 	}

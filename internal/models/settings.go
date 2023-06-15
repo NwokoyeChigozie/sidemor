@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/vesicash/mor-api/pkg/repository/storage/postgresql"
@@ -142,7 +143,7 @@ func (p PaymentMethod) In(methods []PaymentMethod) bool {
 	return false
 }
 
-func (s *Setting) GetSettings(db *gorm.DB, paginator postgresql.Pagination, search string, from int, to int, isVerified *bool) ([]Setting, postgresql.PaginationResponse, error) {
+func (s *Setting) GetSettings(db *gorm.DB, paginator postgresql.Pagination, userIds []int, from int, to int, isVerified *bool) ([]Setting, postgresql.PaginationResponse, error) {
 	details := []Setting{}
 	query := ""
 
@@ -150,13 +151,13 @@ func (s *Setting) GetSettings(db *gorm.DB, paginator postgresql.Pagination, sear
 		query = addQuery(query, fmt.Sprintf("is_verified = %v", *isVerified), "and")
 	}
 
-	//if search != "" {
-	//	query = addQuery(query, fmt.Sprintf("reference = '%v'", search), "and")
-	//}
-
-	//if t.Status != "" {
-	//	query = addQuery(query, fmt.Sprintf("status = '%v'", t.Status), "and")
-	//}
+	if len(userIds) > 0 {
+		idsString := []string{}
+		for _, v := range userIds {
+			idsString = append(idsString, fmt.Sprintf("%v", v))
+		}
+		query = addQuery(query, fmt.Sprintf(" account_id IN (%s)", strings.Join(idsString, ",")), "and")
+	}
 
 	if from != 0 {
 		fromTime := time.Unix(int64(from), 0)

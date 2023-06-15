@@ -24,14 +24,17 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 	morAuthUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db, extReq, middleware.AuthType))
 	{
 		morAuthUrl.GET("/customers", mor.GetCustomers)
+		morAuthUrl.GET("/transactions/get", mor.GetMerchantTransactions)
+		morAuthUrl.GET("/transactions/summary/:account_id", mor.GetMerchantTransactionsSummary)
+		morAuthUrl.GET("/payouts/get", mor.GetMerchantPayouts)
 	}
 
-	paymentApiUrl := r.Group(fmt.Sprintf("%v/settings", ApiVersion), middleware.Authorize(db, extReq, middleware.AuthType))
+	morSettingsAuthUrl := r.Group(fmt.Sprintf("%v/settings", ApiVersion), middleware.Authorize(db, extReq, middleware.AuthType))
 	{
-		paymentApiUrl.GET("/get", mor.GetCustomers)
-		paymentApiUrl.POST("/save", mor.SaveSettings)
-		paymentApiUrl.POST("/payment-methods/:action", mor.EnableOrDisablePaymentMethods)
-		paymentApiUrl.POST("/wallets/:action", mor.AddRemoveOrGetWallets)
+		morSettingsAuthUrl.GET("/get", mor.GetSettings)
+		morSettingsAuthUrl.POST("/save", mor.SaveSettings)
+		morSettingsAuthUrl.POST("/payment-methods/:action", mor.EnableOrDisablePaymentMethods)
+		morSettingsAuthUrl.POST("/wallets/:action", mor.AddRemoveOrGetWallets)
 	}
 
 	paymentBusinessAdminUrl := r.Group(fmt.Sprintf("%v/admin", ApiVersion), middleware.Authorize(db, extReq, middleware.BusinessAdmin))
