@@ -92,7 +92,7 @@ func SaveSettingsService(extReq request.ExternalRequest, db postgresql.Databases
 	return setting, http.StatusOK, nil
 }
 
-func UpdateDocumentStatusService(db postgresql.Databases, settingsID int, req models.UpdateDocumentStatusRequest) (models.Setting, int, error) {
+func UpdateDocumentStatusService(extReq request.ExternalRequest, db postgresql.Databases, settingsID int, req models.UpdateDocumentStatusRequest) (models.Setting, int, error) {
 	var (
 		setting = models.Setting{}
 	)
@@ -103,12 +103,35 @@ func UpdateDocumentStatusService(db postgresql.Databases, settingsID int, req mo
 		}
 	}
 
-	err := setting.UpdateVerificationSettings(db.MOR, settingsID, req)
+	err := setting.UpdateVerificationSettings(db.MOR, req)
 
 	if err != nil {
 		return setting, http.StatusInternalServerError, err
 	}
+	// loop through verification and check if all of them have been approved, if yes, call toggle-mor-status endpoint
+	var isAllVerified bool = true
+	if len(setting.Verifications) < 1 {
+		isAllVerified = false
+	} else {
+		for _, v := range setting.Verifications {
+			if v.Status != models.Verified {
+				isAllVerified = false
+			}
+		}
+	}
 
+	if isAllVerified {
+		setting.IsVerified = true
+		err = setting.UpdateAllFields(db.MOR)
+		if err != nil {
+			return setting, http.StatusInternalServerError, err
+		}
+
+		err = services.ToggleMORStatus(extReq, uint(setting.AccountID), true)
+		if err != nil {
+			return setting, http.StatusInternalServerError, err
+		}
+	}
 	return setting, http.StatusOK, nil
 }
 

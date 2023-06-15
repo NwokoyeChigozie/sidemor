@@ -124,6 +124,8 @@ var (
 	GetWalletsByCurrencies       string = "get_wallets_by_currencies"
 	GetRateByFromAndToCurrencies string = "get_rate_by_from_and_to_currencies"
 	GetUsers                     string = "get_users"
+
+	ToggleMORStatus string = "toggle_mor_status"
 )
 
 func (er ExternalRequest) SendExternalRequest(name string, data interface{}) (interface{}, error) {
@@ -990,6 +992,18 @@ func (er ExternalRequest) SendExternalRequest(name string, data interface{}) (in
 				Logger:       er.Logger,
 			}
 			return obj.GetUsers()
+
+		case "toggle_mor_status":
+			obj := auth.RequestObj{
+				Name:         name,
+				Path:         fmt.Sprintf("%v/v2/toggle-mor-status", config.Microservices.Auth),
+				Method:       "POST",
+				SuccessCode:  200,
+				DecodeMethod: JsonDecodeMethod,
+				RequestData:  data,
+				Logger:       er.Logger,
+			}
+			return obj.ToggleMORStatus()
 		default:
 			return nil, fmt.Errorf("request not found")
 		}

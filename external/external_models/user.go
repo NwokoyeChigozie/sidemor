@@ -70,3 +70,14 @@ type GetUsersResponse struct {
 	Message string `json:"message"`
 	Data    []User `json:"data"`
 }
+type ToggleMORStatusReq struct {
+	Status    *bool `json:"status"`
+	AccountID uint  `json:"account_id"`
+}
+
+type ToggleMORStatusResponse struct {
+	Status  string      `json:"status"`
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}

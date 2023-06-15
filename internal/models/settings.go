@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -177,28 +176,23 @@ func (s *Setting) GetSettings(db *gorm.DB, paginator postgresql.Pagination, user
 	return details, pagination, nil
 }
 
-func (s *Setting) UpdateVerificationSettings(db *gorm.DB, id int, request UpdateDocumentStatusRequest) error {
-	var verification Setting
+func (s *Setting) UpdateVerificationSettings(db *gorm.DB, request UpdateDocumentStatusRequest) error {
 	var err error
-	if err := db.First(&verification, id).Error; err != nil {
-		return err
-	}
 
 	found := false
-	for i, v := range verification.Verifications {
+	for i, v := range s.Verifications {
 		if v.CountryID == uint(request.CountryId) {
-			verification.Verifications[i].Status = VerificationStatus(request.Status)
+			s.Verifications[i].Status = VerificationStatus(request.Status)
 			found = true
 			break
 		}
 	}
 
 	if !found {
-		errMsg := "Country ID not found"
-		return errors.New(errMsg)
+		return fmt.Errorf("country ID not found")
 	}
 
-	err = db.Save(&verification).Error
+	err = db.Save(&s).Error
 	if err != nil {
 		return err
 	}
