@@ -15,6 +15,8 @@ RUN if test -e app.env; then echo 'found app.env'; else mv app-sample.env app.en
 # Deployment stage
 FROM alpine:3.17
 
+RUN apk -U upgrade
+
 WORKDIR /usr/src/app
 
 COPY --from=build /usr/src/app ./
