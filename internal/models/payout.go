@@ -56,6 +56,10 @@ func (p *Payout) GetPayouts(db *gorm.DB, paginator postgresql.Pagination, search
 		query = addQuery(query, fmt.Sprintf("reference = '%v'", search), "and")
 	}
 
+	if p.MerchantID != 0 {
+		query = addQuery(query, fmt.Sprintf("merchant_id = %v", p.MerchantID), "and")
+	}
+
 	if p.CountryID != 0 {
 		query = addQuery(query, fmt.Sprintf("country_id = %v", p.CountryID), "and")
 	}

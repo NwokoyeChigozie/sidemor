@@ -24,6 +24,9 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 	morAuthUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db, extReq, middleware.AuthType))
 	{
 		morAuthUrl.GET("/customers", mor.GetCustomers)
+		morAuthUrl.GET("/transactions/get", mor.GetMerchantTransactions)
+		morAuthUrl.GET("/transactions/summary/:account_id", mor.GetMerchantTransactionsSummary)
+		morAuthUrl.GET("/payouts/get", mor.GetMerchantPayouts)
 	}
 
 	morSettingsAuthUrl := r.Group(fmt.Sprintf("%v/settings", ApiVersion), middleware.Authorize(db, extReq, middleware.AuthType))
