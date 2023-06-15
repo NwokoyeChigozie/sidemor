@@ -73,6 +73,23 @@ func GetUserWithEmail(extReq request.ExternalRequest, email string) (external_mo
 	return us, nil
 }
 
+func GetUsers(extReq request.ExternalRequest, isMorEnabled bool, search string) ([]external_models.User, error) {
+	usItf, err := extReq.SendExternalRequest(request.GetUsers, external_models.GetUsersRequest{
+		Search:       search,
+		IsMorEnabled: isMorEnabled,
+	})
+	if err != nil {
+		return []external_models.User{}, err
+	}
+
+	us, ok := usItf.([]external_models.User)
+	if !ok {
+		return []external_models.User{}, fmt.Errorf("response data format error")
+	}
+
+	return us, nil
+}
+
 func GetUsersByBusinessID(extReq request.ExternalRequest, BusinessId int) ([]external_models.User, error) {
 	usItf, err := extReq.SendExternalRequest(request.GetUsersByBusinessID, strconv.Itoa(BusinessId))
 	if err != nil {

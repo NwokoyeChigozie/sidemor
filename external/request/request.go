@@ -123,6 +123,7 @@ var (
 	CreditWallet                 string = "credit_wallet"
 	GetWalletsByCurrencies       string = "get_wallets_by_currencies"
 	GetRateByFromAndToCurrencies string = "get_rate_by_from_and_to_currencies"
+	GetUsers                     string = "get_users"
 )
 
 func (er ExternalRequest) SendExternalRequest(name string, data interface{}) (interface{}, error) {
@@ -978,6 +979,17 @@ func (er ExternalRequest) SendExternalRequest(name string, data interface{}) (in
 				Logger:       er.Logger,
 			}
 			return obj.GetRateByFromAndToCurrencies()
+		case "get_users":
+			obj := auth.RequestObj{
+				Name:         name,
+				Path:         fmt.Sprintf("%v/v2/users/get", config.Microservices.Auth),
+				Method:       "GET",
+				SuccessCode:  200,
+				DecodeMethod: JsonDecodeMethod,
+				RequestData:  data,
+				Logger:       er.Logger,
+			}
+			return obj.GetUsers()
 		default:
 			return nil, fmt.Errorf("request not found")
 		}
