@@ -663,3 +663,15 @@ func GetRateByCurrencies(extReq request.ExternalRequest, fromCurrency, toCurrenc
 
 	return rate, nil
 }
+
+func ToggleMORStatus(extReq request.ExternalRequest, accountId uint, status bool) error {
+	_, err := extReq.SendExternalRequest(request.ToggleMORStatus, external_models.ToggleMORStatusReq{
+		Status:    &status,
+		AccountID: accountId,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

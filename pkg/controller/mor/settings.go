@@ -223,14 +223,8 @@ func (base *Controller) UpdateDocumentStatus(c *gin.Context) {
 		return
 	}
 
-	_, code, err := mor.UpdateDocumentStatusService(base.Db, id, req)
+	_, code, err := mor.UpdateDocumentStatusService(base.ExtReq, base.Db, id, req)
 	if err != nil {
-		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
-		c.JSON(code, rd)
-		return
-	}
-
-	if code != http.StatusOK {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
 		return

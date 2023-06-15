@@ -68,7 +68,7 @@ func (r *RequestObj) GetUsers() ([]external_models.User, error) {
 		queryParams += fmt.Sprintf("&search=%s", data.Search)
 	}
 
-	err := r.getNewSendRequestObject(data, headers, "").SendRequest(&outBoundResponse)
+	err := r.getNewSendRequestObject(data, headers, queryParams).SendRequest(&outBoundResponse)
 	if err != nil {
 		logger.Error("get users", outBoundResponse, err.Error())
 		return outBoundResponse.Data, err
