@@ -204,19 +204,19 @@ workflows:
       - lint-docker-file:
           filters:
             branches:
-              only: development
+              only: develop
       - build-image:
           requires:
             - lint-docker-file
           filters:
             branches:
-              only: development
+              only: develop
       - publish-image:
           requires:
             - build-image
           filters:
             branches:
-              only: development
+              only: develop
   build-master:
     jobs:
       - lint-docker-file:
