@@ -14,10 +14,9 @@ type VerificationStatus string
 type PaymentMethod string
 
 var (
-	UnSigned VerificationStatus = "unsigned"
-	Signed   VerificationStatus = "signed"
-	Approved VerificationStatus = "approved"
-	Declined VerificationStatus = "declined"
+	NotVerified         VerificationStatus = "not_verified"
+	VerificationPending VerificationStatus = "pending"
+	Verified            VerificationStatus = "verified"
 )
 
 var (
