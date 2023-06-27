@@ -27,8 +27,8 @@ func RequestWithdrawalService(extReq request.ExternalRequest, db postgresql.Data
 		return http.StatusBadRequest, fmt.Errorf("invalid timestamp, time must not be more than 1 year after today")
 	}
 
-	req.Currency = strings.ToUpper(strings.ReplaceAll("MOR_", strings.ToUpper(req.Currency), ""))
-	req.Currency = strings.ToUpper(strings.ReplaceAll("ESCROW_", strings.ToUpper(req.Currency), ""))
+	req.Currency = strings.ToUpper(strings.ReplaceAll(strings.ToUpper(req.Currency), "MOR_", ""))
+	req.Currency = strings.ToUpper(strings.ReplaceAll(strings.ToUpper(req.Currency), "ESCROW_", ""))
 	morWallet := strings.ToUpper(fmt.Sprintf("MOR_%v", req.Currency))
 
 	wallet, err := services.GetWalletBalanceByAccountIdAndCurrency(extReq, int(user.AccountID), morWallet)
@@ -78,8 +78,9 @@ func GetWithdrawalsService(extReq request.ExternalRequest, db postgresql.Databas
 	)
 
 	if req.CurrencyFilter != "" {
-		withdrawal.Currency = strings.ToUpper(strings.ReplaceAll("MOR_", strings.ToUpper(req.CurrencyFilter), ""))
-		withdrawal.Currency = strings.ToUpper(strings.ReplaceAll("ESCROW_", strings.ToUpper(withdrawal.Currency), ""))
+		req.CurrencyFilter = strings.ToUpper(strings.ReplaceAll(strings.ToUpper(req.CurrencyFilter), "MOR_", ""))
+		req.CurrencyFilter = strings.ToUpper(strings.ReplaceAll(strings.ToUpper(req.CurrencyFilter), "ESCROW_", ""))
+		withdrawal.Currency = req.CurrencyFilter
 	}
 
 	if req.Status != "" {

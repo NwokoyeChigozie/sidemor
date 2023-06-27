@@ -53,8 +53,8 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 		paymentBusinessAdminUrl.GET("/payouts/get", mor.GetPayouts)
 		paymentBusinessAdminUrl.POST("/payout/to-wallet", mor.PayOutToWallets)
 
-		morAuthUrl.GET("/withdrawal/get-all", mor.GetWithdrawals)
-		morAuthUrl.PATCH("/withdrawal/complete/:withdrawal_id", mor.CompleteWithdrawal)
+		paymentBusinessAdminUrl.GET("/withdrawal/get-all", mor.GetWithdrawals)
+		paymentBusinessAdminUrl.PATCH("/withdrawal/complete/:withdrawal_id", mor.CompleteWithdrawal)
 	}
 
 	morjobsUrl := r.Group(fmt.Sprintf("%v/jobs", ApiVersion))
