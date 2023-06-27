@@ -4,4 +4,5 @@ type Slack struct {
 	OauthToken            string
 	PaymentChannelID      string
 	DisbursementChannelID string
+	WithdrawalChannelID   string
 }

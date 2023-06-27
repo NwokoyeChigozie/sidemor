@@ -124,6 +124,7 @@ type BaseConfig struct {
 	SLACK_OAUTH_TOKEN             string `mapstructure:"SLACK_OAUTH_TOKEN"`
 	SLACK_PAYMENT_CHANNELID       string `mapstructure:"SLACK_PAYMENT_CHANNELID"`
 	SLACK_DISBURSEMENTS_CHANNELID string `mapstructure:"SLACK_DISBURSEMENTS_CHANNELID"`
+	SLACK_WITHDRAWAL_CHANNELID    string `mapstructure:"SLACK_WITHDRAWAL_CHANNELID"`
 }
 
 func (config *BaseConfig) SetupConfigurationn() *Configuration {
@@ -252,6 +253,7 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 			OauthToken:            config.SLACK_OAUTH_TOKEN,
 			PaymentChannelID:      config.SLACK_PAYMENT_CHANNELID,
 			DisbursementChannelID: config.SLACK_DISBURSEMENTS_CHANNELID,
+			WithdrawalChannelID:   config.SLACK_WITHDRAWAL_CHANNELID,
 		},
 	}
 }

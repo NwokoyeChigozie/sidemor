@@ -27,6 +27,7 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 		morAuthUrl.GET("/transactions/get", mor.GetMerchantTransactions)
 		morAuthUrl.GET("/transactions/summary/:account_id", mor.GetMerchantTransactionsSummary)
 		morAuthUrl.GET("/payouts/get", mor.GetMerchantPayouts)
+		morAuthUrl.POST("/withdrawal/request", mor.RequestWithdrawal)
 	}
 
 	morSettingsAuthUrl := r.Group(fmt.Sprintf("%v/settings", ApiVersion), middleware.Authorize(db, extReq, middleware.AuthType))
@@ -51,6 +52,9 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 		paymentBusinessAdminUrl.GET("/payout/get/:id", mor.GetPayout)
 		paymentBusinessAdminUrl.GET("/payouts/get", mor.GetPayouts)
 		paymentBusinessAdminUrl.POST("/payout/to-wallet", mor.PayOutToWallets)
+
+		morAuthUrl.GET("/withdrawal/get-all", mor.GetWithdrawals)
+		morAuthUrl.PATCH("/withdrawal/complete/:withdrawal_id", mor.CompleteWithdrawal)
 	}
 
 	morjobsUrl := r.Group(fmt.Sprintf("%v/jobs", ApiVersion))

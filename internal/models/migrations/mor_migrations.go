@@ -12,5 +12,6 @@ func AuthMigrationModels() []interface{} {
 		models.Setting{},
 		models.Transaction{},
 		models.WebhookLog{},
+		models.Withdrawal{},
 	}
 }

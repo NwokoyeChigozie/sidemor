@@ -20,7 +20,7 @@ func RecordTransactionService(extReq request.ExternalRequest, db postgresql.Data
 
 	checkTime := int(time.Now().Add(336 * time.Hour).Unix())
 	if req.TransactionCreatedAt > checkTime {
-		return models.Transaction{}, http.StatusBadRequest, fmt.Errorf("invalid timestamp, time must not be more that 2 weeks after today")
+		return models.Transaction{}, http.StatusBadRequest, fmt.Errorf("invalid timestamp, time must not be more than 2 weeks after today")
 	}
 
 	transaction.MerchantID = req.AccountID
