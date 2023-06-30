@@ -222,7 +222,7 @@ func AddRemoveOrGetWalletsService(extReq request.ExternalRequest, db postgresql.
 	} else if strings.EqualFold(action, "get") {
 		if len(req.CurrencyCodes) > 0 {
 			// morCurrencies := []string{}
-			var wallets map[string]external_models.WalletBalance
+			var wallets = map[string]external_models.WalletBalance{}
 			for _, c := range req.CurrencyCodes {
 				wC := strings.ToUpper(c)
 				w, err := services.GetOrCreateWalletBalance(extReq, int(user.AccountID), wC)
