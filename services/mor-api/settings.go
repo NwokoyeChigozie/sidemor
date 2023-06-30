@@ -56,6 +56,7 @@ func SaveSettingsService(extReq request.ExternalRequest, db postgresql.Databases
 		if !utility.InStringSlice(v, setting.CurrencyCodes) {
 			setting.CurrencyCodes = append(setting.CurrencyCodes, v)
 		}
+		services.GetOrCreateWalletBalance(extReq, int(user.AccountID), fmt.Sprintf("MOR_%v", v))
 	}
 
 	setting.BusinessTypeID = req.BusinessTypeID
@@ -220,14 +221,20 @@ func AddRemoveOrGetWalletsService(extReq request.ExternalRequest, db postgresql.
 		currencies, err = handleRemoveCurrencies(extReq, db, int(user.AccountID), currencies, req.CurrencyCodes)
 	} else if strings.EqualFold(action, "get") {
 		if len(req.CurrencyCodes) > 0 {
-			morCurrencies := []string{}
+			// morCurrencies := []string{}
+			var wallets map[string]external_models.WalletBalance
 			for _, c := range req.CurrencyCodes {
-				morCurrencies = append(morCurrencies, fmt.Sprintf("MOR_%s", strings.ToUpper(c)))
+				wC := strings.ToUpper(c)
+				w, err := services.GetOrCreateWalletBalance(extReq, int(user.AccountID), wC)
+				if err == nil {
+					wallets[w.Currency] = w
+				}
+				// morCurrencies = append(morCurrencies, fmt.Sprintf("MOR_%s", wC))
 			}
-			wallets, err := services.GetWalletBalancesByCurrencies(extReq, db, int(user.AccountID), morCurrencies)
-			if err != nil {
-				return wallets, http.StatusInternalServerError, err
-			}
+			// wallets, err := services.GetWalletBalancesByCurrencies(extReq, db, int(user.AccountID), morCurrencies)
+			// if err != nil {
+			// 	return wallets, http.StatusInternalServerError, err
+			// }
 			return wallets, http.StatusOK, nil
 		}
 	}

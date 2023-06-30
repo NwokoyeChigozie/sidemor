@@ -631,6 +631,17 @@ func CreateWalletBalance(extReq request.ExternalRequest, accountID int, currency
 	return wallet, nil
 }
 
+func GetOrCreateWalletBalance(extReq request.ExternalRequest, accountID int, currency string) (external_models.WalletBalance, error) {
+	wallet, err := GetWalletBalanceByAccountIdAndCurrency(extReq, accountID, currency)
+	if err != nil {
+		wallet, err = CreateWalletBalance(extReq, accountID, currency, 0)
+		if err != nil {
+			return wallet, err
+		}
+	}
+	return wallet, nil
+}
+
 func GetWalletBalanceByAccountIdAndCurrency(extReq request.ExternalRequest, accountID int, currency string) (external_models.WalletBalance, error) {
 	walletItf, err := extReq.SendExternalRequest(request.GetWalletBalanceByAccountIDAndCurrency, external_models.GetWalletRequest{
 		AccountID: uint(accountID),
