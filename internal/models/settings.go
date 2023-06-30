@@ -93,7 +93,7 @@ type GetSettingsRequest struct {
 
 type UpdateDocumentStatusRequest struct {
 	CountryId int    `json:"country_id"`
-	Status    string `json:"status"`
+	Status    string `json:"status" validate:"oneof=not_verified pending verified"`
 }
 
 func (s *Setting) CreateSetting(db *gorm.DB) error {
