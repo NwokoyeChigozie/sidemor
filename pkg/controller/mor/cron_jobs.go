@@ -141,3 +141,36 @@ func (base *Controller) UpdateCronJobInterval(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 
 }
+
+func (base *Controller) RunCronJobs(c *gin.Context) {
+	var (
+		reqSlice struct {
+			Jobs []string `json:"jobs" validate:"required"`
+		}
+	)
+
+	err := c.ShouldBind(&reqSlice)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err = base.Validator.Struct(&reqSlice)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err = cronjobs.RunCronJobs(base.ExtReq, base.Db, reqSlice.Jobs)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "cronjob failed", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "started cron jobs", nil)
+	c.JSON(http.StatusOK, rd)
+
+}

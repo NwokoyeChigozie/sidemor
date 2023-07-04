@@ -2,7 +2,9 @@ package postgresql
 
 import (
 	"fmt"
+	"net/url"
 	"os"
+	"strconv"
 
 	"log"
 
@@ -49,6 +51,20 @@ func ConnectToDatabases(logger *utility.Logger, configDatabases config.Databases
 }
 
 func connectToDb(host, user, password, dbname, port, sslmode, timezone string, logger *utility.Logger) *gorm.DB {
+	if _, err := strconv.Atoi(port); err != nil {
+		u, err := url.Parse(port)
+		if err != nil {
+			utility.LogAndPrint(logger, fmt.Sprintf("parsing url %v to get port failed with: %v", port, err))
+			panic(err)
+		}
+
+		detectedPort := u.Port()
+		if detectedPort == "" {
+			utility.LogAndPrint(logger, fmt.Sprintf("detecting port from url %v failed with: %v", port, err))
+			panic(err)
+		}
+		port = detectedPort
+	}
 	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=%v", host, user, password, dbname, port, sslmode, timezone)
 
 	newLogger := lg.New(

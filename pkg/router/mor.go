@@ -59,10 +59,11 @@ func Mor(r *gin.Engine, ApiVersion string, validator *validator.Validate, db pos
 
 	morjobsUrl := r.Group(fmt.Sprintf("%v/jobs", ApiVersion))
 	{
-		morjobsUrl.POST("/start", mor.StartCronJob)
-		morjobsUrl.POST("/start-bulk", mor.StartCronJobsBulk)
-		morjobsUrl.POST("/stop", mor.StopCronJob)
-		morjobsUrl.PATCH("/update_interval", mor.UpdateCronJobInterval)
+		morjobsUrl.POST("/run", mor.RunCronJobs)
+		// morjobsUrl.POST("/start", mor.StartCronJob)
+		// morjobsUrl.POST("/start-bulk", mor.StartCronJobsBulk)
+		// morjobsUrl.POST("/stop", mor.StopCronJob)
+		// morjobsUrl.PATCH("/update_interval", mor.UpdateCronJobInterval)
 	}
 
 	return r

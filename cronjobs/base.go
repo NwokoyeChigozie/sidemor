@@ -89,6 +89,29 @@ func Scheduler(extReq request.ExternalRequest, db postgresql.Databases, mutex *s
 	}
 }
 
+func RunCronJobs(extReq request.ExternalRequest, db postgresql.Databases, jobNames []string) error {
+	errMsgs := []string{}
+	jobs := map[string]CronJobObject{}
+	for _, jobName := range jobNames {
+		cronJob, ok := cronJobs[jobName]
+		if ok {
+			jobs[jobName] = cronJob
+		} else {
+			errMsgs = append(errMsgs, fmt.Sprintf("Cronjob %s not found", jobName))
+		}
+	}
+
+	if len(errMsgs) > 0 {
+		return fmt.Errorf(strings.Join(errMsgs, "; "))
+	}
+
+	for name, job := range jobs {
+		job.CronJob(extReq, db)
+		utility.LogAndPrint(extReq.Logger, fmt.Sprintf("started cronjob: %s", name))
+	}
+	return nil
+}
+
 func StartCronJob(extReq request.ExternalRequest, db postgresql.Databases, jobName string) {
 	mutex := &sync.Mutex{}
 	jobName = strings.ToLower(jobName)
